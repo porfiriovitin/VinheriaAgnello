@@ -38,4 +38,7 @@ build/
 ### Mac OS ###
 .DS_Store
 
-src/main/java/br/com/fiap/Global.java
+.env
+.idea/
+.mvn/
+.smarttomcat/

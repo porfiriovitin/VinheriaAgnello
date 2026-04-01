@@ -3,7 +3,7 @@
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>br.com.fiap.server.LoginServlet</servlet-class>
+        <servlet-class>br.com.fiap.server.DispatcherServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>

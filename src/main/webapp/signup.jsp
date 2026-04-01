@@ -225,7 +225,7 @@
 					<h3 class="font-display text-xl font-bold text-primary">Quer ajuda para escolher seu primeiro vinho?</h3>
 					<p class="text-sm text-slate-600">Acesse o Sommelier Digital e receba uma sugestao ideal para sua ocasiao.</p>
 				</div>
-				<a href="sommelier.html" class="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+				<a href="/controller?action=ShowSommelier" class="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
 					Ir para o sommelier
 					<span class="material-symbols-outlined text-base">arrow_forward</span>
 				</a>
