@@ -22,10 +22,10 @@
 <a href="/controller?action=ShowCartCheckout" class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-700 hover:bg-primary/5 transition-colors">
 <span class="material-symbols-outlined">shopping_bag</span>Carrinho
 </a>
-<a href="/controller?action=ShowLogin" class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-700 hover:bg-primary/5 transition-colors">
+<a href="/VinheriaAgnello/controller?action=ShowLogin" class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-700 hover:bg-primary/5 transition-colors">
 <span class="material-symbols-outlined">person</span>Entrar
 </a>
-<a href="/controller?action=ShowSignup" class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-700 hover:bg-primary/5 transition-colors">
+<a href="/VinheriaAgnello/controller?action=ShowSignup" class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-700 hover:bg-primary/5 transition-colors">
 <span class="material-symbols-outlined">person_add</span>Criar conta
 </a>
 </nav>

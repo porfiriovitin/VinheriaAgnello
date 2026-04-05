@@ -140,7 +140,7 @@
 					<p class="text-sm text-slate-500">Preencha seus dados para começar a comprar com recomendações personalizadas.</p>
 				</div>
 
-				<form class="space-y-5" action="login.html" method="get">
+				<form class="space-y-5" action="/VinheriaAgnello/controller?action=SignUp" method="post">
 					<div class="grid sm:grid-cols-2 gap-4">
 						<div>
 							<label for="first-name" class="block text-sm font-semibold text-primary mb-2">Nome</label>
@@ -212,7 +212,7 @@
 
 				<p class="text-center text-sm text-slate-500 mt-8">
 					Ja possui cadastro?
-					<a href="login.html" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
+					<a href="/VinheriaAgnello/controller?action=ShowLogin" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
 				</p>
 			</article>
 		</section>

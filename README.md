@@ -73,6 +73,38 @@ Para lógica dinâmica em JSPs (loops, condicionais) sem usar código Java bruto
 * **Requisito:** TA aplicação exige os arquivos .jar da JSTL (ex: jstl-1.2.jar e javax.servlet.jsp.jstl-api).
 * **Configuração:** Gerenciado via Maven no pom.xml. Se ausentes, tags como <c:forEach> ou <c:if> causarão erros de renderização no servidor.
 
+---
+
+## 8. Banco de Dados (MongoDB)
+
+A aplicação utiliza o **MongoDB** como banco de dados principal. Para facilitar o setup e garantir consistência entre ambientes, utilize o arquivo `docker-compose.yaml` presente na raiz do projeto para subir o container do MongoDB.
+
+### Passos para configuração do banco de dados:
+
+1. **Subir o MongoDB com Docker Compose:**
+   Execute o comando abaixo na raiz do projeto para iniciar o serviço do banco de dados:
+   
+   ```powershell
+   docker-compose up -d
+   ```
+   Isso criará e iniciará um container MongoDB conforme especificado no `docker-compose.yaml`.
+
+2. **Acessar o banco com MongoDB Compass:**
+   Baixe e instale o [MongoDB Compass](https://www.mongodb.com/try/download/compass) para uma interface gráfica amigável.
+   
+   - Utilize as credenciais e a string de conexão definidas no arquivo `.env` para acessar o banco.
+     - Exemplo: `mongodb://user:password@localhost:27017`
+   - O arquivo `.env` contém variáveis como usuário, senha, host e porta do MongoDB.
+
+3. **Arquivos de ambiente (.env):**'
+   O projeto exige dois arquivos `.env`:
+   - Um na raiz do projeto (ao lado do `pom.xml`), que serve para configuração global e do Docker.
+   - Outro em `src/main/resources`, utilizado pela aplicação Java em tempo de execução.
+   
+   Certifique-se de manter ambos atualizados e com as mesmas credenciais para evitar problemas de conexão.
+
+---
+
 # Exemplo de fluxo
 
 Para entender o funcionamento da nossa funcionalidade de favoritos, vamos acompanhar o caminho completo que os dados fazem, desde a busca inicial dos produtos até a interação do usuário na tela. Esse é um padrão que se repetirá bastante na aplicação.

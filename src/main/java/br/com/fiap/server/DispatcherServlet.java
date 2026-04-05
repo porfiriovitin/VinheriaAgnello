@@ -34,6 +34,7 @@ public class DispatcherServlet extends HttpServlet {
         actionRegistry.put("ShowProductDetails", new ShowProductDetails());
         actionRegistry.put("ShowSignup", new ShowSignup());
         actionRegistry.put("ShowSommelier", new AddFavorite());
+        actionRegistry.put("SignUp", new br.com.fiap.action.auth.SignUp());
     }
 
     @Override
