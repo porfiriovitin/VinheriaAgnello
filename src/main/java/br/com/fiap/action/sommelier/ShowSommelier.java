@@ -1,12 +1,13 @@
-package br.com.fiap.action;
+package br.com.fiap.action.sommelier;
 
+import br.com.fiap.action.Action;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ShowCatalog implements Action {
+public class ShowSommelier implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        return "catalog.jsp";
+        return "sommelier.jsp";
     }
 }

@@ -1,5 +1,6 @@
-package br.com.fiap.action;
+package br.com.fiap.action.product;
 
+import br.com.fiap.action.Action;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

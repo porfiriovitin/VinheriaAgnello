@@ -1,12 +1,13 @@
-package br.com.fiap.action;
+package br.com.fiap.action.cart;
 
+import br.com.fiap.action.Action;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ShowSignup implements Action {
+public class ShowCartCheckout implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        return "signup.jsp";
+        return "cart-checkout.jsp";
     }
 }
