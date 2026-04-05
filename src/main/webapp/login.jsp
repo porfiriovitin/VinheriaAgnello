@@ -142,7 +142,7 @@
 					<p class="text-sm text-slate-500">Use seu e-mail cadastrado para continuar sua jornada na adega Agnello.</p>
 				</div>
 
-				<form class="space-y-5" action="LoginServlet" method="post">
+				<form class="space-y-5" action="/VinheriaAgnello/controller?action=Login" method="post">
 					<div>
 						<label for="email" class="block text-sm font-semibold text-primary mb-2">E-mail</label>
 						<div class="relative">

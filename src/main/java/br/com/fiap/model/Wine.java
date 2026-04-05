@@ -5,14 +5,14 @@ public class Wine {
     public String name;
     public String country;
     public String region;
-    public Double price;
+    public Integer price;
     public String grape;
     public String imageURL;
 
     public Wine() {
     }
 
-    public Wine(String name, String country, String region, Double price, String grape, String imageURL) {
+    public Wine(String name, String country, String region, Integer price, String grape, String imageURL) {
         this.name = name;
         this.country = country;
         this.region = region;
@@ -21,7 +21,7 @@ public class Wine {
         this.imageURL = imageURL;
     }
 
-    public Wine(int id, String name, String country, String region, Double price, String grape, String imageURL) {
+    public Wine(int id, String name, String country, String region, Integer price, String grape, String imageURL) {
         this.id = id;
         this.name = name;
         this.country = country;
@@ -63,11 +63,11 @@ public class Wine {
         this.region = region;
     }
 
-    public Double getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Integer price) {
         this.price = price;
     }
 

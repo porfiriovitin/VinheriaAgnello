@@ -1,6 +1,7 @@
 package br.com.fiap.action.auth;
 
 import br.com.fiap.action.Action;
+import br.com.fiap.dao.UserDAO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -11,31 +12,24 @@ public class Login implements Action {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        System.out.println(email);
-        System.out.println(password);
-        return "OK";
+        if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
+            request.setAttribute("erro", "E-mail e senha são obrigatórios.");
+            return "login.jsp";
+        }
 
-//        String sql = "SELECT id, nome, email FROM usuario WHERE email = ? AND senha = ?";
-//
-//        try (Connection con = ConnectionFactory.getConnection();
-//             PreparedStatement ps = con.prepareStatement(sql)) {
-//
-//            ps.setString(1, email);
-//            ps.setString(2, password);
-//
-//            try (ResultSet rs = ps.executeQuery()) {
-//                if (rs.next()) {
-//                    HttpSession session = request.getSession();
-//                    session.setAttribute("usuarioId", rs.getLong("id"));
-//                    session.setAttribute("usuarioNome", rs.getString("nome"));
-//                    session.setAttribute("usuarioEmail", rs.getString("email"));
-//
-//                    return "home.jsp";
-//                }
-//            }
-//        }
-//
-//        request.setAttribute("erro", "E\\-mail ou senha inválidos.");
-//        return "login.jsp";
+        UserDAO userDAO = new UserDAO();
+        boolean authenticated = userDAO.login(email, password);
+
+        if (!authenticated) {
+            request.setAttribute("erro", "E-mail ou senha inválidos.");
+            return "login.jsp";
+        }
+
+        System.out.println("Usuário autenticado: " + email);
+
+        // To do: Implementar sistema de sessão para manter o usuário logado
+        //:: request.getSession().setAttribute("usuarioLogado", email);
+
+        return "home.jsp";
     }
 }
