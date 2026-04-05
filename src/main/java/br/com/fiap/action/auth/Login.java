@@ -25,10 +25,7 @@ public class Login implements Action {
             return "login.jsp";
         }
 
-        System.out.println("Usuário autenticado: " + email);
-
-        // To do: Implementar sistema de sessão para manter o usuário logado
-        //:: request.getSession().setAttribute("usuarioLogado", email);
+        request.getSession().setAttribute("usuarioLogado", email);
 
         return "home.jsp";
     }

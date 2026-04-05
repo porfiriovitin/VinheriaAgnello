@@ -1,5 +1,6 @@
 <%@ page language="java" pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" isELIgnored="false"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 
 <html class="light" lang="pt-br">
@@ -107,10 +108,12 @@
                         <h3 class="text-primary dark:text-slate-100 text-base font-bold leading-tight mb-1">${wine.name}</h3>
                         <p class="text-slate-500 dark:text-slate-400 text-xs italic mb-2">${wine.region}, ${wine.country}</p>
                         <div class="mt-auto">
-                            <p class="text-primary dark:text-accent-gold font-bold text-lg mb-3">R$ ${wine.price }</p>
-                            <button class="w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold py-3 rounded uppercase tracking-widest transition-colors">
+                            <p class="text-primary dark:text-accent-gold font-bold text-lg mb-3">
+                                R$ <fmt:formatNumber value="${wine.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                            </p>
+                            <a href="controller?action=ShowProductDetails&id=${wine.id}" class=" flex justify-center mx-auto w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold p-3 rounded uppercase tracking-widest transition-colors">
                                 Ver Detalhes
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
