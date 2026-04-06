@@ -6,6 +6,7 @@ import br.com.fiap.action.auth.ShowLogin;
 import br.com.fiap.action.auth.ShowSignup;
 import br.com.fiap.action.auth.SignUp;
 import br.com.fiap.action.cart.ShowCartCheckout;
+import br.com.fiap.action.club.ShowClub;
 import br.com.fiap.action.favorite.AddFavorite;
 import br.com.fiap.action.favorite.RemoveFavorite;
 import br.com.fiap.action.home.ShowIndex;
@@ -38,6 +39,7 @@ public class DispatcherServlet extends HttpServlet {
         actionRegistry.put("ShowSommelier", new AddFavorite());
         actionRegistry.put("SignUp", new SignUp());
         actionRegistry.put("Login", new Login());
+        actionRegistry.put("ShowClub", new ShowClub());
     }
 
     @Override

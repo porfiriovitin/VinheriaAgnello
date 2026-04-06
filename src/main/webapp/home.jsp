@@ -192,7 +192,7 @@
 </li>
 </ul>
 <button class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg hover:bg-white transition-colors">
-                        Assinar a partir de R$ 199/mês
+                        Em breve...
                     </button>
 </div>
 </div>
