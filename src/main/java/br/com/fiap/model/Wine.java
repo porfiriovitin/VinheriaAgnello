@@ -33,7 +33,7 @@ public class Wine {
         this.imageURL = imageURL;
     }
 
-    public Wine(String id, String name, String country, String region, Double price, String grape, String imageURL) {
+    public Wine(String id, String name, String country, String region, Double price, String grape, String imageURL, String type) {
         this.id = id;
         this.name = name;
         this.country = country;
@@ -41,6 +41,8 @@ public class Wine {
         this.price = price;
         this.grape = grape;
         this.imageURL = imageURL;
+        this.country = country;
+        this.type = type;
     }
 
     public String getImageURL() {

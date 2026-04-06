@@ -4,6 +4,7 @@
 <html lang="pt-br"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<%@ include file="./snippets/favicon.jsp" %>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -191,7 +192,7 @@
 </li>
 </ul>
 <button class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg hover:bg-white transition-colors">
-                        Assinar a partir de R$ 199/mês
+                        Em breve...
                     </button>
 </div>
 </div>

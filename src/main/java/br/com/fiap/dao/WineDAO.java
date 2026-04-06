@@ -36,7 +36,8 @@ public class WineDAO {
                     doc.getString("region"),
                     CastUtils.getDouble(doc, "price"),
                     doc.getString("grape"),
-                    doc.getString("imageUrl")
+                    doc.getString("imageUrl"),
+                    doc.getString("type")
             );
             wineList.add(wine);
         }
