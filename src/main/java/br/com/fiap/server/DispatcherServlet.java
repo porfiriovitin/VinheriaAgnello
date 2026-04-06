@@ -1,10 +1,13 @@
 package br.com.fiap.server;
 
+import br.com.fiap.Global;
 import br.com.fiap.action.*;
 import br.com.fiap.action.auth.Login;
 import br.com.fiap.action.auth.ShowLogin;
 import br.com.fiap.action.auth.ShowSignup;
 import br.com.fiap.action.auth.SignUp;
+import br.com.fiap.action.cart.AddToCart;
+import br.com.fiap.action.cart.RemoveFromCart;
 import br.com.fiap.action.cart.ShowCartCheckout;
 import br.com.fiap.action.favorite.AddFavorite;
 import br.com.fiap.action.favorite.RemoveFavorite;
@@ -27,7 +30,10 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        var test = Global.MONGO_INITDB_ROOT_USERNAME;
+
         actionRegistry.put("AddFavorite", new AddFavorite());
+        actionRegistry.put("AddToCart", new AddToCart());
         actionRegistry.put("RemoveFavorite", new RemoveFavorite());
         actionRegistry.put("ShowCartCheckout", new ShowCartCheckout());
         actionRegistry.put("ShowCatalog", new ShowCatalog());
@@ -38,6 +44,7 @@ public class DispatcherServlet extends HttpServlet {
         actionRegistry.put("ShowSommelier", new AddFavorite());
         actionRegistry.put("SignUp", new SignUp());
         actionRegistry.put("Login", new Login());
+        actionRegistry.put("RemoveFromCart", new RemoveFromCart());
     }
 
     @Override
