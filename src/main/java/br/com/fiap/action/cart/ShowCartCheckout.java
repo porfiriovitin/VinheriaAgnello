@@ -1,52 +1,54 @@
 package br.com.fiap.action.cart;
 
 import br.com.fiap.action.Action;
+import br.com.fiap.dao.AccessoryDAO;
+import br.com.fiap.dao.GiftDAO;
 import br.com.fiap.dao.UserDAO;
-import br.com.fiap.dto.cart.CartItem;
+import br.com.fiap.dto.cart.Cart;
+import br.com.fiap.model.Accessory;
+import br.com.fiap.model.Gift;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
- * Action: Display Cart Checkout Page
- * 
- * Purpose: Prepares and displays the shopping cart checkout view.
- * Retrieves user's current cart items from database and makes them 
- * available to the JSP layer for rendering.
- * 
- * Flow: User navigates to checkout → Action loads cart → JSP renders items
+ * Prepares checkout view data from the persisted cart.
+ *
+ * <p>This action intentionally stays read-only: it never mutates cart state and only binds
+ * data required by JSP rendering.</p>
  */
 public class ShowCartCheckout implements Action {
-
     /**
-     * Executes the cart checkout page preparation logic.
-     * 
-     * Business Logic:
-     * 1. Identifies user (currently hardcoded, will use session in production)
-     * 2. Fetches cart items from MongoDB via UserDAO
-     * 3. Binds items to request scope for JSP access via EL (${cartItems})
-     * 4. Returns JSP path for rendering
-     * 
-     * @param request  HTTP request object
-     * @param response HTTP response object
-     * @return JSP file path to render; returning a string triggers view forwarding in the Front Controller
-     * @throws Exception if database access fails
+     * Loads the current cart and exposes it to the checkout page.
+     *
+     * <p>Current user identity is temporary hardcoded until session-based auth is wired.
+     * If identity is missing, redirecting to catalog avoids rendering a checkout page without context.</p>
      */
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        // TEMPORARY: Hardcoded user identification
-        // TODO: Replace with HttpSession.getAttribute("userEmail") when auth module is ready
         String email = "test@agnello.com";
+        if (isBlank(email)) {
+            response.sendRedirect("controller?action=ShowCatalog");
+            return null;
+        }
 
-        // Load user's cart from database
         UserDAO userDAO = new UserDAO();
-        List<CartItem> cartItems = userDAO.getCartItems(email);
+        AccessoryDAO accessoryDAO = new AccessoryDAO();
+        GiftDAO giftDAO = new GiftDAO();
+        Cart cart = userDAO.getCart(email);
+        if (cart == null) cart = new Cart();
+        List<Accessory> accessories = accessoryDAO.findAll();
+        List<Gift> giftsCatalog = giftDAO.findAll();
 
-        // Make cart items available to JSP via Expression Language
-        request.setAttribute("cartItems", cartItems);
-
+        request.setAttribute("cart", cart);
+        request.setAttribute("accessories", accessories);
+        request.setAttribute("giftsCatalog", giftsCatalog);
         return "cart-checkout.jsp";
+    }
+
+    /** Small local guard used to keep endpoint-style validation semantics explicit. */
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

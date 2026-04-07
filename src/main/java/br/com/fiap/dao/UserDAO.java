@@ -1,10 +1,12 @@
 package br.com.fiap.dao;
 
-import br.com.fiap.dto.cart.CartItem;
-import br.com.fiap.model.User;
+import br.com.fiap.dto.cart.Cart;
+import br.com.fiap.dto.cart.CartAccessoryItem;
+import br.com.fiap.dto.cart.CartWineItem;
 import br.com.fiap.infra.ConnectionFactory;
 import br.com.fiap.infra.DbCollections;
-import br.com.fiap.model.Wine;
+import br.com.fiap.model.Gift;
+import br.com.fiap.model.User;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -12,60 +14,25 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * DAO: User Management and Cart Persistence
- * 
- * Purpose: Handles all MongoDB operations for users, including:
- * - User registration with bcrypt password hashing
- * - Authentication with secure password verification
- * - Shopping cart persistence (embedded as array in user document)
- * 
- * Data Model:
- * User document structure in MongoDB:
- * {
- *   "name": "...",
- *   "email": "..." (unique identifier),
- *   "password": "..." (bcrypt hash),
- *   "role": "...",
- *   "cellphone": "...",
- *   "cart": [
- *     { "_id": "wine123", "name": "...", "price": 99.99, "quantity": 2, ... }
- *   ]
- * }
- * 
- * Design Decision: Cart is embedded (not separate collection) for:
- * - Atomic read/write of user+cart in single operation
- * - Simpler data access (no joins needed)
- * - Acceptable since carts are small (<100 items typically)
+ * Persistence gateway for user identity and user-owned cart state.
+ *
+ * <p>Cart storage is denormalized on purpose: it snapshots product fields needed at checkout
+ * together with quantity, reducing extra joins/lookups when rendering cart pages.</p>
  */
 public class UserDAO {
 
     private final MongoCollection<Document> users;
 
-    /**
-     * Initializes DAO with MongoDB connection.
-     * Connection pooling is handled by ConnectionFactory.
-     */
     public UserDAO() {
         MongoDatabase db = ConnectionFactory.getDatabase();
         this.users = db.getCollection(DbCollections.USERS.getCollectionName());
     }
 
-    /**
-     * Registers a new user with secure password hashing.
-     * 
-     * Security: Password is hashed using bcrypt before storage.
-     * BCrypt automatically generates a unique salt per user.
-     * 
-     * @param user User object containing plaintext password (will be hashed)
-     * @throws com.mongodb.MongoWriteException if email already exists (duplicate key)
-     */
     public void create(User user) {
-        // Hash password with bcrypt (auto-generated salt, default cost factor 10)
         String hashed = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-        
+
         Document doc = new Document("name", user.getName())
                 .append("email", user.getEmail())
                 .append("password", hashed)
@@ -74,121 +41,134 @@ public class UserDAO {
         users.insertOne(doc);
     }
 
-    /**
-     * Checks if a user account exists for the given email.
-     * 
-     * Use Case: Pre-registration validation to prevent duplicate accounts.
-     * 
-     * @param email user email to check
-     * @return true if email is already registered
-     */
     public boolean existsByEmail(String email) {
         return users.find(new Document("email", email)).first() != null;
     }
 
-    /**
-     * Authenticates user credentials.
-     * 
-     * Security: Uses bcrypt's constant-time comparison to prevent timing attacks.
-     * 
-     * @param email    user's email address
-     * @param password plaintext password to verify
-     * @return true if user exists AND password matches the stored hash
-     */
     public boolean login(String email, String password) {
         Document userDoc = users.find(new Document("email", email)).first();
         if (userDoc == null) return false;
-        
+
         String hashed = userDoc.getString("password");
-        // BCrypt.checkpw performs constant-time comparison (secure against timing attacks)
         return BCrypt.checkpw(password, hashed);
     }
 
-
     /**
-     * Replaces user's entire cart with new item list.
-     * 
-     * Strategy: Full replacement (not incremental update) for simplicity.
-     * Controller layer handles merge logic; DAO just persists final state.
-     * 
-     * Atomicity: MongoDB updateOne is atomic - cart is never in partial state.
-     * 
-     * @param email       user identifier (lookup key in MongoDB)
-     * @param newCartList complete cart state to persist (pre-validated by caller)
+     * Replaces the full cart subtree in a single write.
+     *
+     * <p>Action layer is responsible for validation/merge rules; DAO focuses on serialization shape.</p>
      */
-    public void updateCart(String email, List<CartItem> newCartList) {
+    public void updateCart(String email, Cart newCart) {
+        List<CartWineItem> wines = newCart != null ? newCart.getWines() : new ArrayList<>();
+        List<CartAccessoryItem> accessories = newCart != null ? newCart.getAccessories() : new ArrayList<>();
+        List<Gift> gifts = newCart != null ? newCart.getGifts() : new ArrayList<>();
 
-        // Convert Java DTOs to MongoDB BSON documents
-        List<Document> cartBson = new ArrayList<>();
+        List<Document> winesBson = new ArrayList<>();
+        for (CartWineItem wineItem : wines) {
+            if (wineItem == null) continue;
+            // Null quantity defaults to one to keep persisted shape deterministic.
+            Integer quantity = wineItem.getQuantity() == null ? 1 : wineItem.getQuantity();
 
-        for (CartItem item : newCartList) {
-            // Map cart item to document structure
-            // Only stores fields needed for cart/checkout (lightweight representation)
-            Document doc = new Document("_id", item.wine.getId())
-                    .append("name", item.wine.getName())
-                    .append("country", item.wine.getCountry())
-                    .append("region", item.wine.getRegion())
-                    .append("price", item.wine.getPrice())
-                    .append("imageURL", item.wine.getImageURL())
-                    .append("quantity", item.quantity);
-            cartBson.add(doc);
+            Document doc = new Document("id", wineItem.getId())
+                    .append("name", wineItem.getName())
+                    .append("country", wineItem.getCountry())
+                    .append("region", wineItem.getRegion())
+                    .append("price", wineItem.getPrice())
+                    .append("imageUrl", wineItem.getImageUrl())
+                    .append("quantity", quantity);
+            winesBson.add(doc);
         }
 
-        // Atomically replace entire cart array in user document
-        // Using $set with full array ensures clean replacement (no orphaned items)
-        users.updateOne(
-                new Document("email", email),
-                new Document("$set", new Document("cart", cartBson))
-        );
+        List<Document> accessoriesBson = new ArrayList<>();
+        for (CartAccessoryItem accessoryItem : accessories) {
+            if (accessoryItem == null) continue;
+            Integer quantity = accessoryItem.getQuantity() == null ? 1 : accessoryItem.getQuantity();
+
+            Document doc = new Document("id", accessoryItem.getId())
+                    .append("name", accessoryItem.getName())
+                    .append("imageURL", accessoryItem.getImageURL())
+                    .append("price", accessoryItem.getPrice())
+                    .append("quantity", quantity);
+            accessoriesBson.add(doc);
+        }
+
+        List<Document> giftsBson = new ArrayList<>();
+        for (Gift gift : gifts) {
+            Document doc = new Document("id", gift.getId())
+                    .append("applied", gift.getApplied())
+                    .append("letterText", gift.getLetterText())
+                    .append("price", gift.getPrice());
+            giftsBson.add(doc);
+        }
+
+        Document cartDoc = new Document("wines", winesBson)
+                .append("accessories", accessoriesBson)
+                .append("gifts", giftsBson);
+
+        users.updateOne(new Document("email", email), new Document("$set", new Document("cart", cartDoc)));
     }
 
     /**
-     * Fetches all items in user's shopping cart.
-     * 
-     * Return Value:
-     * - Empty list if user doesn't exist or cart is empty (safe default)
-     * - List of CartItem DTOs reconstructed from MongoDB documents
-     * 
-     * Design Note: Returns DTOs (not Mongo Documents) to decouple persistence
-     * layer from application layer. Allows switching databases without affecting callers.
-     * 
-     * @param email user identifier (lookup key)
-     * @return user's cart items; never null, returns empty list if cart doesn't exist
+     * Hydrates user cart from persisted BSON shape.
+     *
+     * <p>Returns an empty cart object (never null) to simplify caller code in actions/views.</p>
      */
-    public List<CartItem> getCartItems(String email) {
-
-        // Fetch user document by email
+    public Cart getCart(String email) {
         Document userDoc = users.find(new Document("email", email)).first();
-        if (userDoc == null) return new ArrayList<>();
+        Cart cart = new Cart();
+        if (userDoc == null) return cart;
 
-        // Extract cart array from user document
-        // Returns null if "cart" field doesn't exist (new user who hasn't added items)
-        List<Document> currentCart = userDoc.getList("cart", Document.class);
-        if (currentCart == null || currentCart.isEmpty()) {
-            return new ArrayList<>();
+        Document cartDoc = userDoc.get("cart", Document.class);
+        if (cartDoc == null) return cart;
+
+        List<Document> winesDoc = cartDoc.getList("wines", Document.class);
+        if (winesDoc != null) {
+            List<CartWineItem> wines = new ArrayList<>();
+            for (Document doc : winesDoc) {
+                CartWineItem wineItem = new CartWineItem();
+                wineItem.setId(doc.getString("id"));
+                wineItem.setName(doc.getString("name"));
+                wineItem.setCountry(doc.getString("country"));
+                wineItem.setRegion(doc.getString("region"));
+                wineItem.setPrice(doc.getDouble("price"));
+                wineItem.setImageUrl(doc.getString("imageUrl"));
+                Integer quantity = doc.getInteger("quantity");
+                wineItem.setQuantity(quantity == null ? 1 : quantity);
+                wines.add(wineItem);
+            }
+            cart.setWines(wines);
         }
 
-        // Transform MongoDB documents back into application DTOs
-        // This decouples the application from MongoDB's Document structure
-        List<CartItem> cartList = new ArrayList<>();
-        for (Document doc : currentCart) {
-            CartItem dto = new CartItem();
-            Wine wine = new Wine();
-
-            // Reconstruct Wine object from stored fields
-            wine.setId(doc.getString("_id"));
-            wine.setName(doc.getString("name"));
-            wine.setCountry(doc.getString("country"));
-            wine.setRegion(doc.getString("region"));
-            wine.setPrice(doc.getDouble("price"));
-            wine.setImageURL(doc.getString("imageURL"));
-
-            dto.wine = wine;
-            dto.quantity = doc.getInteger("quantity");
-
-            cartList.add(dto);
+        List<Document> accessoriesDoc = cartDoc.getList("accessories", Document.class);
+        if (accessoriesDoc != null) {
+            List<CartAccessoryItem> accessories = new ArrayList<>();
+            for (Document doc : accessoriesDoc) {
+                CartAccessoryItem accessoryItem = new CartAccessoryItem();
+                accessoryItem.setId(doc.getString("id"));
+                accessoryItem.setName(doc.getString("name"));
+                accessoryItem.setImageURL(doc.getString("imageURL"));
+                accessoryItem.setPrice(doc.getDouble("price"));
+                Integer quantity = doc.getInteger("quantity");
+                accessoryItem.setQuantity(quantity == null ? 1 : quantity);
+                accessories.add(accessoryItem);
+            }
+            cart.setAccessories(accessories);
         }
 
-        return cartList;
+        List<Document> giftsDoc = cartDoc.getList("gifts", Document.class);
+        if (giftsDoc != null) {
+            List<Gift> gifts = new ArrayList<>();
+            for (Document doc : giftsDoc) {
+                Gift gift = new Gift();
+                gift.setId(doc.getString("id"));
+                gift.setApplied(doc.getBoolean("applied"));
+                gift.setLetterText(doc.getString("letterText"));
+                gift.setPrice(doc.getDouble("price"));
+                gifts.add(gift);
+            }
+            cart.setGifts(gifts);
+        }
+
+        return cart;
     }
 }

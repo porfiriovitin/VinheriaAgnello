@@ -1,11 +1,17 @@
 package br.com.fiap.action.cart;
 
 import br.com.fiap.action.Action;
+import br.com.fiap.dao.AccessoryDAO;
+import br.com.fiap.dao.GiftDAO;
 import br.com.fiap.dao.UserDAO;
+import br.com.fiap.dao.WineDAO;
 import br.com.fiap.dto.ApiResponse;
-import br.com.fiap.dto.cart.CartItem;
+import br.com.fiap.dto.cart.Cart;
+import br.com.fiap.dto.cart.CartAccessoryItem;
+import br.com.fiap.dto.cart.CartWineItem;
 import br.com.fiap.dto.cart.CartRequest;
 import br.com.fiap.dto.cart.CartResponse;
+import br.com.fiap.model.Gift;
 import br.com.fiap.util.JsonUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,112 +22,188 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Action: Remove Items from Shopping Cart
- * 
- * Purpose: Handles cart item removal/quantity reduction safely and atomically.
- * 
- * Flow:
- * 1. Parse JSON request (wine IDs + quantities to remove)
- * 2. Load current cart from database
- * 3. For each removal request:
- *    - Find matching item by wine ID
- *    - Reduce quantity by requested amount
- *    - If quantity ≤ 0 → remove item entirely
- * 4. Persist updated cart
- * 5. Return success with updated cart state
- * 
- * Edge Cases:
- * - Removing more than exists → item removed completely (no negative quantities)
- * - Removing non-existent item → silently ignored (idempotent behavior)
+ * Removes or decrements items from the persisted cart using the same trust model as AddToCart.
+ *
+ * <p>Client identifies target ids/quantities; existence is verified against catalog DAOs before
+ * cart mutation to keep behavior consistent with add flow.</p>
  */
 public class RemoveFromCart implements Action {
-
     /**
-     * Executes the remove-from-cart workflow.
-     * 
-     * @param request  HTTP request containing JSON: { items: [{ wine: { id }, quantity }] }
-     * @param response HTTP response to write JSON result
-     * @return null (JSON response written directly, no JSP forwarding)
-     * @throws Exception if database access or JSON parsing fails
+     * Validates request payload, applies removals in-memory, then persists the resulting cart.
+     *
+     * <p>Business rules:
+     * 1. Wines/accessories decrement quantity and are removed when quantity reaches zero.
+     * 2. Gifts are removed by id.</p>
      */
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        // TEMPORARY: Hardcoded user email until session auth is implemented
-        // TODO: Replace with session.getAttribute("userEmail")
         String email = "test@agnello.com";
-
-        // Guard: Validate user identity
-        if (email == null || email.trim().isEmpty()) {
+        if (isBlank(email)) {
             JsonUtil.sendJson(response, new ApiResponse("error", "User email is missing."), HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
 
-        // Parse removal request from JSON
         CartRequest payload = JsonUtil.fromJson(request, CartRequest.class);
-
-        // Guard: Reject malformed/empty requests to maintain deterministic behavior
-        if (payload == null || payload.items == null || payload.items.isEmpty()) {
+        if (payload == null || payload.getCartItems() == null || !hasAnyRemovalItems(payload.getCartItems())) {
             JsonUtil.sendJson(response, new ApiResponse("error", "A lista de itens está vazia ou o JSON é inválido."), HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
 
+        WineDAO wineDAO = new WineDAO();
+        AccessoryDAO accessoryDAO = new AccessoryDAO();
+        GiftDAO giftDAO = new GiftDAO();
         UserDAO userDAO = new UserDAO();
+        Cart incomingCartItems = payload.getCartItems();
+        Cart currentCart = userDAO.getCart(email);
+        if (currentCart == null) currentCart = new Cart();
+        ensureCartLists(currentCart);
 
-        // === CART REMOVAL LOGIC ===
+        if (!decrementValidatedWines(currentCart, incomingCartItems.getWines(), wineDAO, response)) return null;
+        if (!decrementValidatedAccessories(currentCart, incomingCartItems.getAccessories(), accessoryDAO, response)) return null;
+        if (!removeValidatedGift(currentCart, incomingCartItems.getGifts(), giftDAO, response)) return null;
 
-        // Step 1: Load current cart state
-        List<CartItem> currentCart = userDAO.getCartItems(email);
-        if (currentCart == null) currentCart = new ArrayList<>();
+        userDAO.updateCart(email, currentCart);
+        CartResponse apiResponse = new CartResponse("success", "Itens removidos do carrinho com sucesso!", userDAO.getCart(email));
+        JsonUtil.sendJson(response, apiResponse);
+        return null;
+    }
 
-        // Step 2: Process removals in memory
-        for (CartItem itemToRemove : payload.items) {
+    private boolean decrementValidatedWines(
+            Cart currentCart,
+            List<CartWineItem> incomingWines,
+            WineDAO wineDAO,
+            HttpServletResponse response
+    ) throws Exception {
+        if (incomingWines == null || incomingWines.isEmpty()) return true;
 
-            // Guard: Skip malformed removal requests (defense in depth)
-            if (itemToRemove.getWine() == null || itemToRemove.getWine().getId() == null) {
-                continue;
+        for (CartWineItem incomingWineItem : incomingWines) {
+            if (incomingWineItem == null || isBlank(incomingWineItem.getId())) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Item de vinho inválido no payload."), HttpServletResponse.SC_BAD_REQUEST);
+                return false;
             }
 
-            String incomingWineId = itemToRemove.getWine().getId();
+            int quantityToRemove = validateRemovalQuantity(incomingWineItem.getQuantity(), response, "Quantidade inválida para vinho.");
+            if (quantityToRemove < 0) return false;
 
-            // IMPORTANT: Use Iterator to safely remove items during iteration
-            // Using for-each + list.remove() would throw ConcurrentModificationException
-            Iterator<CartItem> iterator = currentCart.iterator();
+            String incomingWineId = incomingWineItem.getId().trim();
+            if (wineDAO.getWineById(incomingWineId) == null) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Vinho não encontrado no catálogo."), HttpServletResponse.SC_NOT_FOUND);
+                return false;
+            }
 
+            Iterator<CartWineItem> iterator = currentCart.getWines().iterator();
             while (iterator.hasNext()) {
-                CartItem existingItem = iterator.next();
-
-                // Match by wine ID (null-safe comparison)
-                if (Objects.equals(existingItem.getWine().getId(), incomingWineId)) {
-
-                    int newQtd = existingItem.getQuantity() - itemToRemove.getQuantity();
-
-                    if (newQtd <= 0) {
-                        // Business Rule: Quantity reached zero → remove item completely
-                        // This handles both exact matches and over-removal gracefully
+                CartWineItem existingItem = iterator.next();
+                if (Objects.equals(existingItem.getId(), incomingWineId)) {
+                    // Persisted carts may come from older states; treat missing quantity as one unit.
+                    int existingQuantity = existingItem.getQuantity() == null ? 1 : existingItem.getQuantity();
+                    int updatedQuantity = existingQuantity - quantityToRemove;
+                    if (updatedQuantity <= 0) {
                         iterator.remove();
                     } else {
-                        // Reduce quantity but keep item in cart
-                        existingItem.setQuantity(newQtd);
+                        existingItem.setQuantity(updatedQuantity);
                     }
-
-                    // OPTIMIZATION: Stop after first match (wine IDs are unique in cart)
-                    // Prevents accidental double-removal if cart somehow had duplicates
                     break;
                 }
             }
         }
 
-        // Step 3: Persist updated cart to database
-        userDAO.updateCart(email, currentCart);
+        return true;
+    }
 
-        // === END REMOVAL LOGIC ===
+    private boolean decrementValidatedAccessories(
+            Cart currentCart,
+            List<CartAccessoryItem> incomingAccessories,
+            AccessoryDAO accessoryDAO,
+            HttpServletResponse response
+    ) throws Exception {
+        if (incomingAccessories == null || incomingAccessories.isEmpty()) return true;
 
-        // Return success with updated cart state
-        CartResponse apiResponse = new CartResponse("success", "Itens removidos do carrinho com sucesso!", currentCart);
-        JsonUtil.sendJson(response, apiResponse);
+        for (CartAccessoryItem incomingAccessoryItem : incomingAccessories) {
+            if (incomingAccessoryItem == null || isBlank(incomingAccessoryItem.getId())) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Item de acessório inválido no payload."), HttpServletResponse.SC_BAD_REQUEST);
+                return false;
+            }
 
-        // Returning null signals: "JSON response already sent, don't forward to JSP"
-        return null;
+            int quantityToRemove = validateRemovalQuantity(incomingAccessoryItem.getQuantity(), response, "Quantidade inválida para acessório.");
+            if (quantityToRemove < 0) return false;
+
+            String incomingAccessoryId = incomingAccessoryItem.getId().trim();
+            if (accessoryDAO.getAccesoryById(incomingAccessoryId) == null) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Acessório não encontrado no catálogo."), HttpServletResponse.SC_NOT_FOUND);
+                return false;
+            }
+
+            Iterator<CartAccessoryItem> iterator = currentCart.getAccessories().iterator();
+            while (iterator.hasNext()) {
+                CartAccessoryItem existingItem = iterator.next();
+                if (Objects.equals(existingItem.getId(), incomingAccessoryId)) {
+                    int existingQuantity = existingItem.getQuantity() == null ? 1 : existingItem.getQuantity();
+                    int updatedQuantity = existingQuantity - quantityToRemove;
+                    if (updatedQuantity <= 0) {
+                        iterator.remove();
+                    } else {
+                        existingItem.setQuantity(updatedQuantity);
+                    }
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean removeValidatedGift(
+            Cart currentCart,
+            List<Gift> incomingGifts,
+            GiftDAO giftDAO,
+            HttpServletResponse response
+    ) throws Exception {
+        if (incomingGifts == null || incomingGifts.isEmpty()) return true;
+
+        for (Gift incomingGift : incomingGifts) {
+            if (incomingGift == null || isBlank(incomingGift.getId())) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Item de presente inválido no payload."), HttpServletResponse.SC_BAD_REQUEST);
+                return false;
+            }
+
+            String incomingGiftId = incomingGift.getId().trim();
+            if (giftDAO.getGiftById(incomingGiftId) == null) {
+                JsonUtil.sendJson(response, new ApiResponse("error", "Presente não encontrado no catálogo."), HttpServletResponse.SC_NOT_FOUND);
+                return false;
+            }
+
+            // removeIf keeps code idempotent when client retries the same delete request.
+            currentCart.getGifts().removeIf(existingGift -> Objects.equals(existingGift.getId(), incomingGiftId));
+        }
+
+        return true;
+    }
+
+    private void ensureCartLists(Cart cart) {
+        // Normalization keeps mutation code branch-free.
+        if (cart.getWines() == null) cart.setWines(new ArrayList<>());
+        if (cart.getAccessories() == null) cart.setAccessories(new ArrayList<>());
+        if (cart.getGifts() == null) cart.setGifts(new ArrayList<>());
+    }
+
+    private boolean hasAnyRemovalItems(Cart incomingCartItems) {
+        return (incomingCartItems.getWines() != null && !incomingCartItems.getWines().isEmpty())
+                || (incomingCartItems.getAccessories() != null && !incomingCartItems.getAccessories().isEmpty())
+                || (incomingCartItems.getGifts() != null && !incomingCartItems.getGifts().isEmpty());
+    }
+
+    private int validateRemovalQuantity(Integer quantity, HttpServletResponse response, String errorMessage) throws Exception {
+        // Missing quantity defaults to one, mirroring AddToCart semantics.
+        int quantityToRemove = quantity == null ? 1 : quantity;
+        if (quantityToRemove < 1) {
+            JsonUtil.sendJson(response, new ApiResponse("error", errorMessage), HttpServletResponse.SC_BAD_REQUEST);
+            return -1;
+        }
+        return quantityToRemove;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

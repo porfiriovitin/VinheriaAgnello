@@ -2,7 +2,9 @@ package br.com.fiap.infra;
 
 public enum DbCollections {
     USERS("users"),
-    WINES("wines");
+    WINES("wines"),
+    GIFTS("gifts"),
+    ACCESSORIES("accessories");
 
     private final String collectionName;
 

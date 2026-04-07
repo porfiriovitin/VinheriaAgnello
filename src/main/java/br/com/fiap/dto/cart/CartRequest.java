@@ -1,6 +1,16 @@
 package br.com.fiap.dto.cart;
-import java.util.List;
+
+import com.google.gson.annotations.SerializedName;
 
 public class CartRequest {
-    public List<CartItem> items;
+    @SerializedName("CartItems")
+    private Cart cartItems;
+
+    public Cart getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(Cart cartItems) {
+        this.cartItems = cartItems;
+    }
 }

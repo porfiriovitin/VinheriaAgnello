@@ -52,6 +52,8 @@
     }
     body { min-height: max(884px, 100dvh); }
   </style>
+
+  <%@ include file="./snippets/app-scripts.jsp" %>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
@@ -261,9 +263,11 @@
       </span>
     </div>
 
-    <button class="flex-1 bg-primary text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">
+    <button class="js-product-add-to-cart flex-1 bg-primary border border-transparent text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+            data-wine-id="${wine.id}"
+            type="button">
       <span class="material-symbols-outlined">shopping_bag</span>
-      Adicionar ao Carrinho
+      <span class="js-product-add-to-cart-label">Adicionar ao Carrinho</span>
     </button>
   </div>
 </div>
