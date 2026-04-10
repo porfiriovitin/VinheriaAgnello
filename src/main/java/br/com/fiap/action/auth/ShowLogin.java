@@ -8,6 +8,7 @@ public class ShowLogin implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
+        request.setAttribute("activeMenu", "login");
         return "login.jsp";
     }
 }

@@ -8,6 +8,7 @@ public class ShowSommelier implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
+        request.setAttribute("activeMenu", "sommelier");
         return "sommelier.jsp";
     }
 }

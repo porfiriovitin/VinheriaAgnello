@@ -27,20 +27,21 @@ public class ShowCartCheckout implements Action {
      */
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String email = "test@agnello.com";
-        if (isBlank(email)) {
-            response.sendRedirect("controller?action=ShowCatalog");
+        String userEmail = (String) request.getSession().getAttribute("usuarioLogado");
+        if (isBlank(userEmail)) {
+            response.sendRedirect("controller?action=ShowLogin");
             return null;
         }
 
         UserDAO userDAO = new UserDAO();
         AccessoryDAO accessoryDAO = new AccessoryDAO();
         GiftDAO giftDAO = new GiftDAO();
-        Cart cart = userDAO.getCart(email);
+        Cart cart = userDAO.getCart(userEmail);
         if (cart == null) cart = new Cart();
         List<Accessory> accessories = accessoryDAO.findAll();
         List<Gift> giftsCatalog = giftDAO.findAll();
 
+        request.setAttribute("activeMenu", "cart");
         request.setAttribute("cart", cart);
         request.setAttribute("accessories", accessories);
         request.setAttribute("giftsCatalog", giftsCatalog);

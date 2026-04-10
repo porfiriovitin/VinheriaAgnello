@@ -38,9 +38,10 @@ public class AddToCart implements Action {
      */
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String email = "test@agnello.com";
-        if (isBlank(email)) {
-            JsonUtil.sendJson(response, new ApiResponse("error", "User email is missing."), HttpServletResponse.SC_BAD_REQUEST);
+        String userEmail = (String) request.getSession().getAttribute("usuarioLogado");
+        if (isBlank(userEmail)) {
+            //JsonUtil.sendJson(response, new ApiResponse("error", "User email is missing."), HttpServletResponse.SC_BAD_REQUEST);
+            response.sendRedirect("controller?action=ShowLogin");
             return null;
         }
 
@@ -55,7 +56,7 @@ public class AddToCart implements Action {
         AccessoryDAO accessoryDAO = new AccessoryDAO();
         GiftDAO giftDAO = new GiftDAO();
         UserDAO userDAO = new UserDAO();
-        Cart currentCart = userDAO.getCart(email);
+        Cart currentCart = userDAO.getCart(userEmail);
         if (currentCart == null) currentCart = new Cart();
         ensureCartLists(currentCart);
 
@@ -63,8 +64,8 @@ public class AddToCart implements Action {
         if (!addValidatedAccessories(currentCart, incomingCartItems.getAccessories(), accessoryDAO, response)) return null;
         if (!addAcceptedGift(currentCart, incomingCartItems.getGifts(), giftDAO, response)) return null;
 
-        userDAO.updateCart(email, currentCart);
-        CartResponse apiResponse = new CartResponse("success", "Carrinho atualizado com sucesso!", userDAO.getCart(email));
+        userDAO.updateCart(userEmail, currentCart);
+        CartResponse apiResponse = new CartResponse("success", "Carrinho atualizado com sucesso!", userDAO.getCart(userEmail));
         JsonUtil.sendJson(response, apiResponse);
         return null;
     }

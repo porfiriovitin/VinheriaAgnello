@@ -14,6 +14,7 @@ import br.com.fiap.action.favorite.RemoveFavorite;
 import br.com.fiap.action.home.ShowIndex;
 import br.com.fiap.action.product.ShowCatalog;
 import br.com.fiap.action.product.ShowProductDetails;
+import br.com.fiap.action.sommelier.ShowSommelier;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -38,7 +39,7 @@ public class DispatcherServlet extends HttpServlet {
         actionRegistry.put("ShowLogin", new ShowLogin());
         actionRegistry.put("ShowProductDetails", new ShowProductDetails());
         actionRegistry.put("ShowSignup", new ShowSignup());
-        actionRegistry.put("ShowSommelier", new AddFavorite());
+        actionRegistry.put("ShowSommelier", new ShowSommelier());
         actionRegistry.put("SignUp", new SignUp());
         actionRegistry.put("Login", new Login());
         actionRegistry.put("ShowClub", new ShowClub());

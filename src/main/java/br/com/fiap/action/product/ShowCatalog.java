@@ -15,6 +15,7 @@ public class ShowCatalog implements Action {
         List<Wine> wineList = wineDAO.findAll();
         request.setAttribute("wineList", wineList);
 
+        request.setAttribute("activeMenu", "catalog");
         return "catalog.jsp";
     }
 }

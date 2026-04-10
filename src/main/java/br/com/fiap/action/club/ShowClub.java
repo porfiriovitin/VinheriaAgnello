@@ -8,6 +8,7 @@ public class ShowClub implements Action {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
+        request.setAttribute("activeMenu", "club");
         return "club.jsp";
     }
 }

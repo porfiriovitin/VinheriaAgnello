@@ -66,7 +66,7 @@
 <header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-primary/10 px-4 py-4">
     <div class="max-w-2xl mx-auto flex items-center justify-between">
         <button class="flex items-center text-primary">
-            <span class="material-symbols-outlined">arrow_back</span>
+            <span onclick="window.history.back()" class="material-symbols-outlined">arrow_back</span>
         </button>
         <h1 class="text-xl font-bold text-primary tracking-tight">Vinheria Agnello</h1>
         <div class="w-6"></div> <!-- Spacer for balance -->

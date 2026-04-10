@@ -25,6 +25,7 @@ public class ShowProductDetails implements Action {
         }
 
         request.setAttribute("wine", wine);
+        request.setAttribute("activeMenu", "catalog");
         return "product-details.jsp";
     }
 }

@@ -93,12 +93,12 @@
 
 	<header class="sticky top-0 z-30 bg-background-light/90 backdrop-blur-md border-b border-primary/10">
 		<div class="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
-			<a href="pages/products.html" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+			<a href="/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
 				<span class="material-symbols-outlined">arrow_back</span>
 				<span class="text-sm font-semibold">Voltar para a vitrine</span>
 			</a>
 			<p class="font-display text-lg md:text-xl font-bold tracking-tight text-primary">VINHERIA AGNELLO</p>
-			<a href="sommelier.html" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors">
+			<a href="/controller?action=ShowSommelier" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors">
 				<span class="material-symbols-outlined text-base">smart_toy</span>
 				Sommelier Digital
 			</a>
@@ -143,7 +143,7 @@
 					<p class="text-sm text-slate-500">Use seu e-mail cadastrado para continuar sua jornada na adega Agnello.</p>
 				</div>
 
-				<form class="space-y-5" action="/VinheriaAgnello/controller?action=Login" method="post">
+				<form class="space-y-5" action="/controller?action=Login" method="post">
 					<div>
 						<label for="email" class="block text-sm font-semibold text-primary mb-2">E-mail</label>
 						<div class="relative">

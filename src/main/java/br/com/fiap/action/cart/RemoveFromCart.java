@@ -37,8 +37,8 @@ public class RemoveFromCart implements Action {
      */
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String email = "test@agnello.com";
-        if (isBlank(email)) {
+        String userEmail = (String) request.getSession().getAttribute("usuarioLogado");
+        if (isBlank(userEmail)) {
             JsonUtil.sendJson(response, new ApiResponse("error", "User email is missing."), HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
@@ -54,7 +54,7 @@ public class RemoveFromCart implements Action {
         GiftDAO giftDAO = new GiftDAO();
         UserDAO userDAO = new UserDAO();
         Cart incomingCartItems = payload.getCartItems();
-        Cart currentCart = userDAO.getCart(email);
+        Cart currentCart = userDAO.getCart(userEmail);
         if (currentCart == null) currentCart = new Cart();
         ensureCartLists(currentCart);
 
@@ -62,8 +62,8 @@ public class RemoveFromCart implements Action {
         if (!decrementValidatedAccessories(currentCart, incomingCartItems.getAccessories(), accessoryDAO, response)) return null;
         if (!removeValidatedGift(currentCart, incomingCartItems.getGifts(), giftDAO, response)) return null;
 
-        userDAO.updateCart(email, currentCart);
-        CartResponse apiResponse = new CartResponse("success", "Itens removidos do carrinho com sucesso!", userDAO.getCart(email));
+        userDAO.updateCart(userEmail, currentCart);
+        CartResponse apiResponse = new CartResponse("success", "Itens removidos do carrinho com sucesso!", userDAO.getCart(userEmail));
         JsonUtil.sendJson(response, apiResponse);
         return null;
     }

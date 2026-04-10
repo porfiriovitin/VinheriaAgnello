@@ -61,7 +61,7 @@
 <span class="text-accent-gold font-display italic text-lg mb-2">Tradição &amp; Excelência</span>
 <h2 class="text-white font-display text-4xl font-bold leading-tight mb-6">Há 30 anos selecionando vinhos com paixão</h2>
 <div class="w-12 h-[2px] bg-accent-gold mb-6"></div>
-<a href="products.html" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-display tracking-wide border border-accent-gold/30 transition-all inline-flex items-center justify-center">
+<a href="/controller?action=ShowCatalog" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-display tracking-wide border border-accent-gold/30 transition-all inline-flex items-center justify-center">
                     Explorar Coleção
                 </a>
 </div>
