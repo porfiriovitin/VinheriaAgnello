@@ -67,26 +67,7 @@
 </div>
 </section>
 <!-- Interactive Wine Finder CTA -->
-<section class="px-4 -mt-12 relative z-10">
-<div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-primary/5">
-<div class="flex items-center gap-4 mb-3">
-<div class="bg-primary/10 p-3 rounded-full">
-<span class="material-symbols-outlined text-primary text-3xl">temp_preferences_custom</span>
-</div>
-<div>
-<h3 class="font-display text-xl font-bold text-primary dark:text-slate-100">Descubra seu vinho ideal</h3>
-<p class="text-sm text-slate-500 dark:text-slate-400">O sommelier digital Agnello ajuda você.</p>
-</div>
-</div>
-<p class="text-slate-600 dark:text-slate-300 text-sm mb-5 leading-relaxed">
-                    Responda 3 perguntas simples e receba recomendações personalizadas baseadas no seu paladar.
-                </p>
-<button class="w-full bg-primary text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 group">
-                    Começar Quiz 
-                    <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
-</div>
-</section>
+
 <!-- Categories Grid -->
 <section class="px-4 pt-12">
 <div class="flex items-end justify-between mb-6">
