@@ -93,7 +93,7 @@
 
 	<header class="sticky top-0 z-30 bg-background-light/90 backdrop-blur-md border-b border-primary/10">
 		<div class="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
-			<a href="/VinheriaAgnello/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+			<a href="/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
 				<span class="material-symbols-outlined">arrow_back</span>
 				<span class="text-sm font-semibold">Voltar para a vitrine</span>
 			</a>
