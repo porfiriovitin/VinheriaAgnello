@@ -13,10 +13,9 @@ public class ConnectionFactory {
 
     public static MongoDatabase getDatabase() {
         if (mongoClient == null) {
-            String uri = "mongodb://" + Global.MONGO_INITDB_ROOT_USERNAME + ":" +
-                    Global.MONGO_INITDB_ROOT_PASSWORD + "@localhost:27017";
+            String uri = Global.MONGO_CONNECTION_STRING;
             mongoClient = MongoClients.create(uri);
         }
-        return mongoClient.getDatabase(Global.MONGO_DB_NAME);
+        return mongoClient.getDatabase("vinheriaagnello");
     }
 }
