@@ -141,7 +141,18 @@
 					<p class="text-sm text-slate-500">Preencha seus dados para começar a comprar com recomendações personalizadas.</p>
 				</div>
 
-				<form class="space-y-5" action="/controller?action=SignUp" method="post">
+                <%
+                    String erro = (String) request.getAttribute("erro");
+                    if (erro != null && !erro.isBlank()) {
+                %>
+                  <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    <%= erro %>
+                  </div>
+                <%
+                    }
+                %>
+
+				<form class="space-y-5" action="/VinheriaAgnello/controller?action=SignUp" method="post">
 					<div class="grid sm:grid-cols-2 gap-4">
 						<div>
 							<label for="first-name" class="block text-sm font-semibold text-primary mb-2">Nome</label>
@@ -213,23 +224,12 @@
 
 				<p class="text-center text-sm text-slate-500 mt-8">
 					Ja possui cadastro?
-					<a href="/controller?action=ShowLogin" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
+					<a href="/VinheriaAgnello/controller?action=ShowLogin" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
 				</p>
 			</article>
 		</section>
 
-		<section class="mt-10 rounded-xl border border-accent-gold/30 bg-gradient-to-r from-accent-gold/10 to-white p-5 md:p-6 fade-up fade-up-delay-2">
-			<div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-				<div>
-					<h3 class="font-display text-xl font-bold text-primary">Quer ajuda para escolher seu primeiro vinho?</h3>
-					<p class="text-sm text-slate-600">Acesse o Sommelier Digital e receba uma sugestao ideal para sua ocasiao.</p>
-				</div>
-				<a href="/controller?action=ShowSommelier" class="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-					Ir para o sommelier
-					<span class="material-symbols-outlined text-base">arrow_forward</span>
-				</a>
-			</div>
-		</section>
+
 	</main>
 </body>
 </html>

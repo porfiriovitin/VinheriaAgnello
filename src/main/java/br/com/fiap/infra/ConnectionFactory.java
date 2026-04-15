@@ -13,8 +13,8 @@ public class ConnectionFactory {
 
     public static MongoDatabase getDatabase() {
         if (mongoClient == null) {
-            String uri = "mongodb://" + Global.MONGO_INITDB_ROOT_USERNAME + ":" +
-                    Global.MONGO_INITDB_ROOT_PASSWORD + "@localhost:27017";
+            String uri = "mongodb+srv://" + Global.MONGO_INITDB_ROOT_USERNAME + ":" +
+                    Global.MONGO_INITDB_ROOT_PASSWORD + "@fiap.lcuvyoq.mongodb.net/";
             mongoClient = MongoClients.create(uri);
         }
         return mongoClient.getDatabase(Global.MONGO_DB_NAME);
