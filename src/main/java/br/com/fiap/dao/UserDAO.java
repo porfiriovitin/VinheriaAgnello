@@ -7,6 +7,7 @@ import br.com.fiap.infra.ConnectionFactory;
 import br.com.fiap.infra.DbCollections;
 import br.com.fiap.model.Gift;
 import br.com.fiap.model.User;
+import br.com.fiap.util.CastUtils;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -130,7 +131,7 @@ public class UserDAO {
                 wineItem.setName(doc.getString("name"));
                 wineItem.setCountry(doc.getString("country"));
                 wineItem.setRegion(doc.getString("region"));
-                wineItem.setPrice(doc.getDouble("price"));
+                wineItem.setPrice(CastUtils.getDouble(doc, "price"));
                 wineItem.setImageUrl(doc.getString("imageUrl"));
                 Integer quantity = doc.getInteger("quantity");
                 wineItem.setQuantity(quantity == null ? 1 : quantity);
@@ -147,7 +148,7 @@ public class UserDAO {
                 accessoryItem.setId(doc.getString("id"));
                 accessoryItem.setName(doc.getString("name"));
                 accessoryItem.setImageURL(doc.getString("imageURL"));
-                accessoryItem.setPrice(doc.getDouble("price"));
+                accessoryItem.setPrice(CastUtils.getDouble(doc,"price"));
                 Integer quantity = doc.getInteger("quantity");
                 accessoryItem.setQuantity(quantity == null ? 1 : quantity);
                 accessories.add(accessoryItem);
@@ -163,7 +164,7 @@ public class UserDAO {
                 gift.setId(doc.getString("id"));
                 gift.setApplied(doc.getBoolean("applied"));
                 gift.setLetterText(doc.getString("letterText"));
-                gift.setPrice(doc.getDouble("price"));
+                gift.setPrice(CastUtils.getDouble(doc,"price"));
                 gifts.add(gift);
             }
             cart.setGifts(gifts);
