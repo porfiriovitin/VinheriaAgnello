@@ -70,27 +70,12 @@ async function addToCart(productId, quantity) {
 }
 
 async function sendCartAction(action, cartItems) {
-    const baseUrl = (window.ApiClient && ApiClient.BASE_URL) ? ApiClient.BASE_URL : 'controller';
-    const url = `${baseUrl}?action=${encodeURIComponent(action)}`;
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ CartItems: cartItems })
-    });
-
-    let data = {};
-    try {
-        data = await response.json();
-    } catch (error) {
-        throw new Error('Resposta inválida do servidor.');
+    const data = await ApiClient.request(action, {}, 'POST', { CartItems: cartItems });
+    if (data.redirected) {
+        return data;
     }
-
-    if (!response.ok || data.status !== 'success') {
-        throw new Error(data.message || `HTTP Error: ${response.status}`);
+    if (data.status !== 'success') {
+        throw new Error(data.message || 'Resposta inválida do servidor.');
     }
 
     return data;
@@ -406,7 +391,7 @@ async function handleGiftLetterUpdate(checkbox, messageField) {
         addToCartButton.addEventListener('click', async () => {
             if (addToCartButton.disabled) return;
             if (addToCartButton.dataset.added === 'true') {
-                window.location.href = '/controller?action=ShowCartCheckout';
+                window.location.href = window.location.pathname + '?action=ShowCartCheckout';
                 return;
             }
 

@@ -66,7 +66,9 @@
   <span class="font-display font-bold text-lg tracking-tight">Vinheria Agnello</span>
 
   <button type="button" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors">
+    <!--
     <span class="material-symbols-outlined text-primary">favorite</span>
+    -->
   </button>
 </nav>
 
@@ -78,9 +80,11 @@
         class="w-full h-full object-cover"
         src="<c:out value='${wine.imageURL}' />"
       />
+      <!--
       <div class="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg">
         <span class="material-symbols-outlined text-primary">zoom_in</span>
       </div>
+      -->
     </div>
   </section>
 

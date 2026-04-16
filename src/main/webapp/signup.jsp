@@ -87,12 +87,12 @@
 <body class="text-slate-900 dark:text-slate-100">
 	<header class="sticky top-0 z-30 bg-background-light/90 backdrop-blur-md border-b border-primary/10">
 		<div class="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
-			<a href="/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+			<a href="${pageContext.request.contextPath}/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
 				<span class="material-symbols-outlined">arrow_back</span>
 				<span class="text-sm font-semibold">Voltar para a vitrine</span>
 			</a>
 			<p class="font-display text-lg md:text-xl font-bold tracking-tight text-primary">VINHERIA AGNELLO</p>
-			<a href="/controller?action=ShowLogin" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors">
+			<a href="${pageContext.request.contextPath}/controller?action=ShowLogin" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors">
 				<span class="material-symbols-outlined text-base">login</span>
 				Já tenho conta
 			</a>
@@ -224,7 +224,7 @@
 
 				<p class="text-center text-sm text-slate-500 mt-8">
 					Ja possui cadastro?
-					<a href="/VinheriaAgnello/controller?action=ShowLogin" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
+					<a href="${pageContext.request.contextPath}/controller?action=ShowLogin" class="font-bold text-primary hover:text-primary/80 transition-colors">Entrar agora</a>
 				</p>
 			</article>
 		</section>

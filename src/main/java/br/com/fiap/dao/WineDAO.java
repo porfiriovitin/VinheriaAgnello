@@ -39,6 +39,7 @@ public class WineDAO {
                     doc.getString("imageUrl"),
                     doc.getString("type")
             );
+            wine.setUserRatings(CastUtils.getDouble(doc, "user_ratings"));
             wineList.add(wine);
         }
         return wineList;

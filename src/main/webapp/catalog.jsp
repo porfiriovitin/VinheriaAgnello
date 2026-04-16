@@ -108,6 +108,7 @@
                      data-price="${wine.price}">
                     <div class="relative aspect-[3/4] overflow-hidden bg-[#f4f1f1] flex items-center justify-center p-4">
                         <img alt="Vinho Tinto Brunello" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Elegante garrafa de vinho tinto Brunello di Montalcino" src="${wine.imageURL}"/>
+                        <!--
                         <div class="absolute top-2 right-2">
                             <span id="fav-icon-${wine.id}"
                                 onclick="addToFavorites(${wine.id})"
@@ -115,6 +116,7 @@
                                 favorite
                             </span>
                         </div>
+                        -->
                     </div>
                     <div class="p-4 flex flex-col flex-1">
                         <h3 class="text-primary dark:text-slate-100 text-base font-bold leading-tight mb-1">${wine.name}</h3>
@@ -123,7 +125,7 @@
                             <p class="text-primary dark:text-accent-gold font-bold text-lg mb-3">
                                 R$ <fmt:formatNumber value="${wine.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                             </p>
-                            <a href="controller?action=ShowProductDetails&id=${wine.id}" class=" flex justify-center mx-auto w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold p-3 rounded uppercase tracking-widest transition-colors">
+                            <a href="${pageContext.request.contextPath}/controller?action=ShowProductDetails&id=${wine.id}" class=" flex justify-center mx-auto w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold p-3 rounded uppercase tracking-widest transition-colors">
                                 Ver Detalhes
                             </a>
                         </div>
@@ -137,10 +139,12 @@
         </div>
 
         <div class="flex flex-col items-center px-4 py-12 gap-4">
+            <!--
             <button class="flex min-w-[200px] cursor-pointer items-center justify-center rounded border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 h-12 text-sm font-bold uppercase tracking-widest transition-all">
                 Carregar mais
             </button>
             <p class="text-slate-400 text-xs italic">Exibindo 6 de 142 rótulos</p>
+            -->
         </div>
     </main>
 
