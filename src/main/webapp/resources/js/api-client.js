@@ -10,7 +10,7 @@ class ApiClient {
      * @param {string} method - The HTTP method ('GET', 'POST', etc.). Defaults to 'GET'.
      * @returns {Promise<object>} The parsed JSON response.
      */
-    static async request(action, params = {}, method = 'GET') {
+    static async request(action, params = {}, method = 'GET', body = null) {
 
         // 1. Automatically build the query string (e.g., action=AddFavorite&id=15)
         const queryData = { action: action, ...params };
@@ -20,14 +20,29 @@ class ApiClient {
         // 2. Configure the standard headers
         const config = {
             method: method,
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: { 'Accept': 'application/json' }
         };
+
+        if (body !== null) {
+            config.headers['Content-Type'] = 'application/json';
+            config.body = JSON.stringify(body);
+        }
 
         try {
             // 3. Execute the fetch call
             const response = await fetch(url, config);
+
+            // Some actions may intentionally redirect (e.g., session timeout/login).
+            // In this case, avoid JSON parsing/errors and let browser continue.
+            if (response.redirected) {
+                window.location.href = response.url;
+                return {
+                    status: 'redirected',
+                    redirected: true,
+                    url: response.url
+                };
+            }
+
             const data = await response.json();
 
             // 4. Centralized Error Handling

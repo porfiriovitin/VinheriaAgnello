@@ -80,7 +80,7 @@
 			<p class="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Dal 1994</p>
 		</div>
 
-		<a href="cart-checkout.jsp" class="p-2 text-primary dark:text-slate-100 relative" aria-label="Ver carrinho">
+		<a href="${pageContext.request.contextPath}/controller?action=ShowCartCheckout" class="p-2 text-primary dark:text-slate-100 relative" aria-label="Ver carrinho">
 			<span class="material-symbols-outlined text-2xl">shopping_bag</span>
 			<span class="absolute top-1 right-1 bg-accent-gold text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
 		</a>

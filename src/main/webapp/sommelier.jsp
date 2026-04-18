@@ -52,7 +52,7 @@
 <!-- Top Navigation Bar -->
 <header class="flex items-center justify-between p-4 md:px-8 border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
 <button class="flex items-center justify-center p-2 hover:bg-primary/5 rounded-full transition-colors">
-<a href="/controller?action=ShowIndex" class="material-symbols-outlined text-primary dark:text-slate-100">close</a>
+<a href="${pageContext.request.contextPath}/controller?action=ShowIndex" class="material-symbols-outlined text-primary dark:text-slate-100">close</a>
 </button>
 <h1 class="text-primary dark:text-slate-100 text-lg font-bold tracking-tight font-serif">Vinheria Agnello</h1>
 <button class="flex items-center justify-center p-2 hover:bg-primary/5 rounded-full transition-colors">

@@ -151,7 +151,7 @@
                 <c:otherwise>
                     <div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center justify-between gap-4">
                         <p class="text-sm text-slate-600 dark:text-slate-300">Nenhum vinho adicionado ao carrinho.</p>
-                        <a href="/controller?action=ShowCatalog"
+                        <a href="${pageContext.request.contextPath}/controller?action=ShowCatalog"
                            class="inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors shrink-0">
                             Ver Catálogo
                         </a>
@@ -290,6 +290,7 @@
     </div>
 </footer>
 <!-- Bottom Nav Bar (Optional Component Logic) -->
+<!--
 <div class="fixed bottom-0 left-0 w-full flex gap-2 border-t border-primary/5 bg-background-light dark:bg-background-dark px-4 pb-3 pt-2 hidden">
     <a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary/60" href="#">
         <span class="material-symbols-outlined">wine_bar</span>
@@ -304,5 +305,6 @@
         <p class="text-xs font-medium leading-normal tracking-tight">Perfil</p>
     </a>
 </div>
+-->
 </body>
 </html>
