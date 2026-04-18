@@ -1,256 +1,395 @@
-# Project Architecture & Developer Guide
+# Vinheria Agnello - Architecture & Developer Guide
 
-> Este documento descreve os padrões arquiteturais, estruturas de diretórios e componentes principais de nossa aplicação Web Java. Utilizamos uma arquitetura **MVC (Model-View-Controller)** moderna, construída sobre o padrão de design **Front Controller**, para garantir escalabilidade, código limpo e separação de preocupações.
-
----
-
-## 1. The Front Controller (DispatcherServlet)
-
-O `DispatcherServlet` atua como o ponto de entrada único para todas as requisições HTTP recebidas. Em vez de múltiplos Servlets espalhados pelo projeto, este intercepta a requisição e a roteia para a lógica de negócio apropriada.
-
-* **The Action Registry:** Dentro do método `init()`, o Servlet mantém um `Map<String, Action>` chamado *Action Registry*.
-* **Routing Logic:** Quando uma requisição chega (ex: `controller?action=ShowCatalog`), o Servlet busca a string "ShowCatalog" no registro, recupera a instância da `Action` correspondente e chama seu método `execute()`.
-* **Thread Safety:** As instâncias de Action no registro são **Singletons** (criadas apenas uma vez no início do servidor). Portanto, **nunca utilize variáveis de instância** em classes Action para armazenar dados do usuário.
+> Este documento descreve a arquitetura atual do projeto, os fluxos principais e as convenções que precisam ser preservadas durante manutenção e evolução da aplicação.
 
 ---
 
-## 2. Actions (`br.com.yourcompany.action`)
+## 1. Visão Geral
 
-As Actions contêm a lógica de negócio central. Elas recuperam dados do banco, aplicam regras e decidem o que o usuário verá a seguir. Toda classe Action deve implementar a interface `Action`.
+A aplicação é uma Web App Java baseada em:
 
-### Tipos de Retorno
-* **Retornando um JSP (Navegação):** Se a Action retorna uma `String` (ex: `return "WEB-INF/catalog.jsp";`), o `DispatcherServlet` realiza um *forward* no servidor para renderizar a página.
-* **Retornando Null (AJAX/APIs):** Se a Action lida com requisições assíncronas e já escreveu uma resposta JSON via `JsonUtil`, ela deve retornar `null`. Isso interrompe o processamento e evita redirecionamentos.
+- `JSP` para renderização de páginas
+- `Servlet` com padrão **Front Controller**
+- `MongoDB` para persistência
+- `Tailwind CSS` no frontend
+- `JavaScript` separado em camadas de API e UI
 
-### Padrão "Package by Feature"
-As Actions são agrupadas estritamente por domínio (funcionalidade), mantendo o código relacionado unido:
-* `action/auth/`: `ShowLogin`, `ProcessSignup`, etc.
-* `action/product/`: `ShowCatalog`, `ShowProductDetails`, etc.
-* `action/cart/`: `ShowCart`, `AddToCart`, etc.
+O projeto segue arquitetura **MVC (Model-View-Controller)** com organização por funcionalidade.
 
 ---
 
-## 3. Data Models & DTOs
+## 2. Front Controller
 
-Separamos estritamente as entidades do banco de dados dos objetos de comunicação com o frontend.
+O ponto de entrada da aplicação é o [DispatcherServlet.java](src/main/java/br/com/fiap/server/DispatcherServlet.java).
 
-| Camada | Pacote | Descrição |
-| :--- | :--- | :--- |
-| **Models** | `br.com.yourcompany.model` | Representam tabelas do banco (ex: `Wine.java` com campos id, nome, safra). |
-| **DTOs** | `br.com.yourcompany.dto` | *Data Transfer Objects* formatam os dados para o cliente. O `ApiResponse.java` é a base padrão para garantir JSONs previsíveis. |
+Ele é responsável por:
 
----
+- receber todas as requisições em `/controller`
+- ler o parâmetro `action`
+- buscar a implementação correspondente no `actionRegistry`
+- executar a `Action`
+- fazer `forward` para JSP quando a action retorna uma view
+- encerrar o fluxo quando a action já respondeu diretamente com redirect ou JSON
 
-## 4. Utility Classes (`br.com.yourcompany.util`)
+Exemplo de rota:
 
-Códigos de infraestrutura repetitivos são abstraídos em utilitários:
-* **`JsonUtil.java`:** Encapsula a biblioteca **Gson**. Em vez de configurar headers HTTP manualmente em cada endpoint, as Actions chamam `JsonUtil.sendJson(response, dataObject);`, que serializa o objeto automaticamente.
-
----
-
-## 5. Frontend Architecture (`webapp/resources/js`)
-
-A arquitetura JavaScript espelha a separação de preocupações do backend:
-
-* **`api-client.js`:** Uma camada de abstração para a API nativa `fetch`. Formata query strings, manipula headers e centraliza o tratamento de erros (HTTP 400/500). **Não contém código de UI.**
-* **`ui-actions.js`:** Contém funções disparadas por interações do usuário (ex: `onclick="addToFavorites(15)"`). Elas chamam o `ApiClient.request()`, aguardam o JSON e manipulam o DOM conforme o resultado.
-
----
-
-## 6. Reusable Views (`webapp/snippets`)
-
-Para aderir ao princípio **DRY (Don't Repeat Yourself)**, componentes HTML repetitivos (navbar, footer, meta tags) são extraídos para arquivos JSP isolados.
-
-**Uso:** Injetar snippets nas páginas principais via diretiva de inclusão:
-```jsp
-<jsp:include page="snippets/navbar.jsp" />
+```text
+/controller?action=ShowCatalog
 ```
 
-## 7. Taglibs and .jar Dependencies
-
-Para lógica dinâmica em JSPs (loops, condicionais) sem usar código Java bruto (<% %>), utilizamos a JSTL (JavaServer Pages Standard Tag Library).
-
-* **Requisito:** TA aplicação exige os arquivos .jar da JSTL (ex: jstl-1.2.jar e javax.servlet.jsp.jstl-api).
-* **Configuração:** Gerenciado via Maven no pom.xml. Se ausentes, tags como <c:forEach> ou <c:if> causarão erros de renderização no servidor.
+As instâncias de `Action` são registradas uma vez no `init()`, então devem continuar **sem estado por usuário**.
 
 ---
 
-## 8. Banco de Dados (MongoDB)
+## 3. Estrutura por Feature
 
-A aplicação utiliza o **MongoDB** como banco de dados principal. Para facilitar o setup e garantir consistência entre ambientes, utilize o arquivo `docker-compose.yaml` presente na raiz do projeto para subir o container do MongoDB.
+As actions estão organizadas por domínio em `src/main/java/br/com/fiap/action`:
 
-### Passos para configuração do banco de dados:
+- `br.com.fiap.action.auth`
+  - `ShowLogin`
+  - `ShowSignup`
+  - `Login`
+  - `SignUp`
+  - `AuthFlowSupport`
+- `br.com.fiap.action.cart`
+  - `ShowCartCheckout`
+  - `AddToCart`
+  - `RemoveFromCart`
+- `br.com.fiap.action.checkout`
+  - `CheckoutFlowSupport`
+  - `ShowCheckoutAddress`
+  - `ShowCheckoutFinalize`
+- `br.com.fiap.action.product`
+  - `ShowCatalog`
+  - `ShowProductDetails`
+- `br.com.fiap.action.home`
+  - `ShowIndex`
+- `br.com.fiap.action.club`
+  - `ShowClub`
+- `br.com.fiap.action.favorite`
+  - `AddFavorite`
+  - `RemoveFavorite`
 
-1. **Subir o MongoDB com Docker Compose:**
-   Execute o comando abaixo na raiz do projeto para iniciar o serviço do banco de dados:
-   
-   ```powershell
-   docker-compose up -d
-   ```
-   Isso criará e iniciará um container MongoDB conforme especificado no `docker-compose.yaml`.
-
-2. **Acessar o banco com MongoDB Compass:**
-   Baixe e instale o [MongoDB Compass](https://www.mongodb.com/try/download/compass) para uma interface gráfica amigável.
-   
-   - Utilize as credenciais e a string de conexão definidas no arquivo `.env` para acessar o banco.
-     - Exemplo: `mongodb://user:password@localhost:27017`
-   - O arquivo `.env` contém variáveis como usuário, senha, host e porta do MongoDB.
-
-3. **Arquivos de ambiente (.env):**'
-   O projeto exige dois arquivos `.env`:
-   - Um na raiz do projeto (ao lado do `pom.xml`), que serve para configuração global e do Docker.
-   - Outro em `src/main/resources`, utilizado pela aplicação Java em tempo de execução.
-   
-   Certifique-se de manter ambos atualizados e com as mesmas credenciais para evitar problemas de conexão.
+Essa organização mantém leitura e manutenção mais simples do que separar tudo apenas por “controller”, “service” ou “view”.
 
 ---
 
-# Exemplo de fluxo
+## 4. Modelos, DTOs e Persistência
 
-Para entender o funcionamento da nossa funcionalidade de favoritos, vamos acompanhar o caminho completo que os dados fazem, desde a busca inicial dos produtos até a interação do usuário na tela. Esse é um padrão que se repetirá bastante na aplicação.
+### Models
 
-### 1. Carregando o Catálogo (Backend)
-Tudo começa quando o usuário acessa a URL do catálogo (`<domain>/controller?action=ShowCatalog`). A requisição cai na action `ShowCatalog`, que é responsável por buscar os dados que serão exibidos.
+Os modelos ficam em `br.com.fiap.model` e representam entidades da aplicação, como:
 
-Aqui, criamos uma lista mocada de objetos `Wine` (representando nossos vinhos) e a adicionamos ao parâmetro `wineList` da requisição. Em seguida, redirecionamos o usuário para a página JSP, levando essa lista junto:
+- `User`
+- `Wine`
+- `Accessory`
+- `Gift`
 
-```java
-public String execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        List<Wine> mocWineList = new ArrayList<>(Arrays.asList(
-                new Wine(1, "Brunello di Montalcino", "Itália", "Toscana", 450.00, "Sangiovese", ""),
-                new Wine(2, "Barolo DOCG", "Itália", "Piemonte", 380.00, "Nebbiolo", ""),
-                new Wine(3, "Chianti Classico", "Itália", "Toscana", 120.00, "Sangiovese", ""),
-                new Wine(4, "Amarone DOCG", "Itália", "Vêneto", 520.00, "Corvina", ""),
-                new Wine(5, "Chardonnay Reserve", "EUA", "Napa Valley", 290.00, "Chardonnay", ""),
-                new Wine(6, "Malbec Gran Reserva", "Argentina", "Mendoza", 215.00, "Malbec", "")
-        ));
-        request.setAttribute("wineList", mocWineList);
+### DTOs
 
-        return "catalog.jsp";
-    }
+Os DTOs ficam em `br.com.fiap.dto` e padronizam troca de dados entre backend e frontend.
+
+Exemplos:
+
+- `ApiResponse`
+- `Cart`
+- `CartRequest`
+- `CartResponse`
+- `CartWineItem`
+- `CartAccessoryItem`
+
+### DAOs
+
+Os acessos ao banco ficam em `br.com.fiap.dao`.
+
+Exemplos:
+
+- `UserDAO`
+- `WineDAO`
+- `AccessoryDAO`
+- `GiftDAO`
+
+O carrinho é persistido dentro do documento do usuário e serializado pelo `UserDAO`. Isso permite renderizar checkout e carrinho sem precisar recompor tudo em tempo real a partir do catálogo.
+
+---
+
+## 5. Frontend
+
+### JSPs
+
+As páginas principais ficam em `src/main/webapp`:
+
+- `home.jsp`
+- `catalog.jsp`
+- `product-details.jsp`
+- `cart-checkout.jsp`
+- `checkout-address.jsp`
+- `checkout-finalization.jsp`
+- `login.jsp`
+- `signup.jsp`
+- `club.jsp`
+
+### Snippets reutilizáveis
+
+Blocos compartilhados ficam em `src/main/webapp/snippets`:
+
+- `app-scripts.jsp`
+- `bottom-nav.jsp`
+- `menu.jsp`
+- `favicon.jsp`
+
+### JavaScript
+
+Os scripts seguem separação de responsabilidade:
+
+- [api-client.js](src/main/webapp/resources/js/api-client.js)
+  - centraliza chamadas HTTP
+  - abstrai `fetch`
+  - concentra tratamento de erro
+
+- [ui-actions.js](src/main/webapp/resources/js/ui-actions.js)
+  - reage às interações do usuário
+  - chama a camada de API
+  - atualiza DOM e comportamento visual
+
+---
+
+## 6. Navegação e `contextPath`
+
+### Regra importante
+
+Sempre que a aplicação montar links ou redirects internos, deve usar:
+
+- `request.getContextPath()` no backend
+- `${pageContext.request.contextPath}` no JSP
+
+### Por que isso é importante
+
+O WAR gerado pelo projeto tem `finalName` igual a `api`, então no ambiente local o contexto da aplicação fica:
+
+```text
+http://localhost:8080/api
 ```
 
-### 2. Renderizando a Página (Frontend - JSP)
-Com os dados em mãos, a `catalog.jsp` entra em ação. No topo do arquivo, configuramos a página para aceitar a Expression Language (EL) forçando o `isELIgnored="false"` e importamos a taglib `core`, que será essencial para iterar sobre a nossa lista:
+Isso significa que uma rota correta não é apenas:
 
-```jsp
-<%@ page language="java" pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" isELIgnored="false"%>
+```text
+/controller?action=ShowIndex
 ```
+
+e sim:
+
+```text
+/api/controller?action=ShowIndex
+```
+
+Ao usar `contextPath`, o código continua funcionando mesmo se:
+
+- o nome do WAR mudar
+- a aplicação sair de `/api`
+- a app for publicada em outro servidor
+- a porta mudar
+
+### Impacto prático
+
+Essa padronização foi importante para estabilizar:
+
+- navegação entre home, catálogo, clube, login e cadastro
+- fluxo de checkout
+- redirecionamentos depois de login
+- links do menu e bottom-nav
+- retorno para home no fechamento do checkout
+
+Também evita bugs de URL quebrada e 404.
+
+### `window.APP_CONTEXT`
+
+No frontend, o snippet [app-scripts.jsp](src/main/webapp/snippets/app-scripts.jsp) injeta o contexto em:
+
+```javascript
+window.APP_CONTEXT
+```
+
+Isso permite que o JavaScript também monte URLs sem hardcode.
+
+---
+
+## 7. Fluxo de Autenticação
+
+### Login manual
+
+Quando a pessoa entra por `ShowLogin` de forma normal:
+
+- o fluxo limpa redirects pendentes
+- depois do login com sucesso, vai para `ShowIndex`
+
+### Login disparado por fluxo protegido
+
+Quando a pessoa tenta abrir carrinho/checkout sem estar logada:
+
+- o sistema salva a action protegida via [AuthFlowSupport.java](src/main/java/br/com/fiap/action/auth/AuthFlowSupport.java)
+- redireciona para `ShowLogin&loginContext=checkout`
+- após autenticar, volta para o fluxo protegido original
+
+### Cadastro
+
+O cadastro em [SignUp.java](src/main/java/br/com/fiap/action/auth/SignUp.java) hoje:
+
+- cria o usuário
+- autentica automaticamente na sessão
+- limpa qualquer redirect antigo
+- manda direto para `ShowIndex`
+
+Ou seja, não passa mais pela tela de login após criar conta.
+
+---
+
+## 8. Fluxo de Checkout
+
+O checkout foi estruturado em 3 etapas:
+
+1. `Carrinho`
+   - [ShowCartCheckout.java](src/main/java/br/com/fiap/action/cart/ShowCartCheckout.java)
+   - [cart-checkout.jsp](src/main/webapp/cart-checkout.jsp)
+2. `Endereço`
+   - [ShowCheckoutAddress.java](src/main/java/br/com/fiap/action/checkout/ShowCheckoutAddress.java)
+   - [checkout-address.jsp](src/main/webapp/checkout-address.jsp)
+3. `Pagamento`
+   - [ShowCheckoutFinalize.java](src/main/java/br/com/fiap/action/checkout/ShowCheckoutFinalize.java)
+   - [checkout-finalization.jsp](src/main/webapp/checkout-finalization.jsp)
+
+### Comportamentos importantes desse fluxo
+
+- O carrinho é uma rota protegida: sem login, redireciona para autenticação.
+- A etapa de endereço reaproveita os dados do usuário autenticado como base.
+- A etapa de pagamento mantém os dados de entrega via campos hidden e post.
+- O botão `Editar` no step 3 volta corretamente para a edição do endereço.
+- Quando a compra é confirmada (`simulateConfirm=true`), o carrinho persistido do usuário é limpo.
+- Mesmo com o carrinho limpo, a tela final continua mostrando o resumo daquele pedido recém-concluído usando uma cópia em memória (`orderSummaryCart`).
+
+### Navegação de retorno
+
+O carrinho possui lógica específica para lembrar sua origem e evitar retornos ruins dentro do fluxo.
+
+Exemplos de comportamento ajustado:
+
+- `Home -> Carrinho -> voltar` retorna para `Home`
+- `Entrega -> Carrinho -> voltar` retorna para `Home`
+- `Pagamento aprovado -> voltar` retorna para `Home`
+
+---
+
+## 9. Taglibs e Dependências JSP
+
+As páginas usam JSTL para condicionais e loops, evitando scriptlets Java na view.
+
+Exemplo:
 
 ```jsp
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 ```
 
-Ainda no cabeçalho, incluímos o bloco de código que faz o setup dos nossos scripts JS:
+As dependências são gerenciadas via Maven no `pom.xml`.
 
-```jsp
-<%@ include file="./snippets/app-scripts.jsp"%>
+Se essas libs não estiverem disponíveis no build, tags como `c:if`, `c:forEach` e `fmt:formatNumber` quebram a renderização.
+
+---
+
+## 10. Banco de Dados (MongoDB)
+
+A aplicação usa **MongoDB** como banco principal.
+
+O projeto já possui [docker-compose.yaml](docker-compose.yaml) para subir o banco localmente.
+
+### Setup rápido
+
+```bash
+docker-compose up -d
 ```
 
-No corpo da página, usamos a tag `<c:forEach>` para percorrer a `wineList` que o backend nos enviou. Para cada vinho, a página injeta dinamicamente as informações (como imagem, nome, região e preço) usando EL.
+### Arquivos de ambiente
 
-Note que, dentro de cada card, já deixamos preparado um ícone de favorito amarrado ao `id` específico de cada vinho:
+O projeto espera configuração por `.env`:
 
-```html
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4 md:p-8">
-            <c:forEach var="wine" items="${wineList}">
-                <div class="group flex flex-col bg-white dark:bg-background-dark/50 rounded-lg overflow-hidden border border-primary/5 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="relative aspect-[3/4] overflow-hidden bg-[#f4f1f1] flex items-center justify-center p-4">
-                        <img alt="Vinho Tinto Brunello" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Elegante garrafa de vinho tinto Brunello di Montalcino" src="${wine.imageURL}"/>
-                        <div class="absolute top-2 right-2">
-                            <span id="fav-icon-${wine.id}"
-                                onclick="addToFavorites(${wine.id})"
-                                class="material-symbols-outlined text-primary/30 group-hover:text-primary transition-colors cursor-pointer">
-                                favorite
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-4 flex flex-col flex-1">
-                        <h3 class="text-primary dark:text-slate-100 text-base font-bold leading-tight mb-1">${wine.name}</h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-xs italic mb-2">${wine.region}, ${wine.country}</p>
-                        <div class="mt-auto">
-                            <p class="text-primary dark:text-accent-gold font-bold text-lg mb-3">R$ ${wine.price }</p>
-                            <button class="w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold py-3 rounded uppercase tracking-widest transition-colors">
-                                Ver Detalhes
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </c:forEach>
-        </div>
+- um arquivo na raiz do projeto
+- outro em `src/main/resources`
+
+Os dois devem estar coerentes entre si para evitar falhas de conexão.
+
+Para inspeção manual do banco, pode ser usado o MongoDB Compass com a connection string configurada no ambiente.
+
+---
+
+## 11. Build e Deploy
+
+O projeto é empacotado como `war`.
+
+No [pom.xml](pom.xml), o `finalName` está configurado como:
+
+```xml
+<finalName>api</finalName>
 ```
 
-Para fechar a renderização da página, incluímos o menu lateral e a barra de navegação inferior:
+Então o build gera:
 
-```jsp
- <%@ include file="./snippets/menu.jsp"%>
-```
-```jsp
- <%@ include file="./snippets/bottom-nav.jsp"%>
+```text
+target/api.war
 ```
 
-### 3. Disparando a Ação de Favoritar (Frontend - JS)
-Quando o usuário clica no ícone de coração de um produto, o evento `onclick` aciona a função `addToFavorites`, passando o `id` daquele vinho:
+Em um Tomcat local, isso normalmente publica a aplicação em:
 
-```html
-<span id="fav-icon-${wine.id}"
-                                onclick="addToFavorites(${wine.id})"
-                                class="material-symbols-outlined text-primary/30 group-hover:text-primary transition-colors cursor-pointer">
-                                favorite
-</span>
+```text
+http://localhost:8080/api
 ```
 
-Essa função vive no arquivo `ui-actions.js` (que importamos lá no início). Ela faz uma requisição assíncrona ao servidor solicitando a adição do item aos favoritos, usando a abstração `ApiClient`:
+### Build local
 
-```javascript
-const responseData = await ApiClient.request('AddFavorite', { id: productId });
+```bash
+mvn clean package
 ```
 
-### 4. Processando o Favorito (Backend)
-A requisição do nosso JS bate na action `AddFavorite` (`.../controller?action=AddFavorite`). O primeiro passo dela é capturar o ID que enviamos no corpo da requisição:
+---
 
-```java
-String productId = request.getParameter("id");
-```
+## 12. Exemplo de Fluxo Assíncrono
 
-Em seguida, fazemos as validações necessárias (se o ID está vazio, por exemplo) e simulamos a persistência disso no banco. Construímos então uma `ApiResponse` (nossa DTO base) contendo o status da operação:
+Um fluxo que continua servindo como referência é o de favoritos:
 
-```java
-if (productId == null || productId.trim().isEmpty()) {
-            ApiResponse error = new ApiResponse("error", "Product ID is missing.");
-            JsonUtil.sendJson(response, error, HttpServletResponse.SC_BAD_REQUEST);
+1. o catálogo renderiza os produtos
+2. cada card expõe um ícone com o `id` do vinho
+3. o clique chama uma função em `ui-actions.js`
+4. essa função usa `api-client.js` para chamar `AddFavorite`
+5. a action responde com JSON
+6. o frontend atualiza o estado visual do ícone
 
-            return null;
-        }
+Esse padrão também inspira outros fluxos assíncronos do projeto, como atualização de carrinho.
 
-        System.out.println("Saving product " + productId + " to favorites...");
+---
 
-        ApiResponse apiResponse = new ApiResponse("success", "Item added to your favorites!");
-```
+## 13. Convenções de Manutenção
 
-Como não queremos recarregar a página, usamos o `JsonUtil` para enviar essa resposta de volta ao frontend no formato JSON com o código de sucesso (200, por padrão). Retornamos `null` no execute para garantir que nenhum redirecionamento ocorra:
+Ao evoluir o projeto, preserve estas regras:
 
-```java
-JsonUtil.sendJson(response, apiResponse);
-```
+- não usar URL interna hardcoded quando `contextPath` resolver o problema
+- manter actions sem estado por usuário
+- preferir organização por feature
+- separar persistência (`DAO`), fluxo (`Action`) e renderização (`JSP`)
+- manter scripts de API separados de scripts de UI
+- ao mexer em checkout/autenticação, validar redirecionamentos e contexto da aplicação
 
-### 5. Atualizando a Interface (Frontend - JS)
-De volta ao `ui-actions.js`, a execução que estava pausada no `await` é retomada com a resposta do backend. Se tudo deu certo (`status === 'success'`), atualizamos o visual do ícone para mostrar que ele foi favoritado (vermelho e preenchido).
+---
 
-Por fim, alteramos o evento de clique do ícone para apontar para a função `removeFromFavorites`, permitindo que o usuário desfaça a ação no futuro:
+## 14. Arquivos-Chave
 
-```javascript
-if (responseData.status === 'success') {
-            // :: Find the specific span that was clicked
-            const icon = document.getElementById(`fav-icon-${productId}`);
+Arquivos especialmente importantes para entender o projeto:
 
-            // :: Update visual state to "Favorited" (Red and filled)
-            icon.classList.remove('text-primary/30', 'group-hover:text-primary');
-            icon.classList.add('text-red-500');
-            icon.style.fontVariationSettings = "'FILL' 1";
+- [DispatcherServlet.java](src/main/java/br/com/fiap/server/DispatcherServlet.java)
+- [UserDAO.java](src/main/java/br/com/fiap/dao/UserDAO.java)
+- [AuthFlowSupport.java](src/main/java/br/com/fiap/action/auth/AuthFlowSupport.java)
+- [CheckoutFlowSupport.java](src/main/java/br/com/fiap/action/checkout/CheckoutFlowSupport.java)
+- [cart-checkout.jsp](src/main/webapp/cart-checkout.jsp)
+- [checkout-address.jsp](src/main/webapp/checkout-address.jsp)
+- [checkout-finalization.jsp](src/main/webapp/checkout-finalization.jsp)
+- [api-client.js](src/main/webapp/resources/js/api-client.js)
+- [ui-actions.js](src/main/webapp/resources/js/ui-actions.js)
 
-            // :: Change the click event to trigger the Remove function
-            icon.setAttribute('onclick', `removeFromFavorites(${productId})`);
-
-        }
-```

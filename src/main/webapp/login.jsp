@@ -83,6 +83,20 @@
 				transform: translateY(0);
 			}
 		}
+
+		.login-submit-button {
+			touch-action: manipulation;
+		}
+
+		.login-submit-button:active {
+			background-color: rgba(73, 14, 14, 0.9);
+		}
+
+		@media (hover: hover) and (pointer: fine) {
+			.login-submit-button:hover {
+				background-color: rgba(73, 14, 14, 0.9);
+			}
+		}
 	</style>
 </head>
 
@@ -91,21 +105,21 @@
     	String erro = (String) request.getAttribute("erro");
     %>
 
-	<header class="sticky top-0 z-30 bg-background-light/90 backdrop-blur-md border-b border-primary/10">
-		<div class="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
-			<a href="/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+	<header class="sticky top-0 z-30 bg-background-light/95 backdrop-blur-sm border-b border-primary/10 px-4 py-3">
+		<div class="max-w-6xl mx-auto grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+			<a href="${pageContext.request.contextPath}/controller?action=ShowIndex" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors min-w-0 justify-self-start">
 				<span class="material-symbols-outlined">arrow_back</span>
-				<span class="text-sm font-semibold">Voltar para a vitrine</span>
+				<span class="hidden sm:inline text-sm font-semibold truncate">Voltar para a vitrine</span>
 			</a>
-			<p class="font-display text-lg md:text-xl font-bold tracking-tight text-primary">VINHERIA AGNELLO</p>
-			<a href="/controller?action=ShowSommelier" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors">
-				<span class="material-symbols-outlined text-base">smart_toy</span>
-				Sommelier Digital
+			<p class="font-display text-lg md:text-xl font-bold tracking-tight text-primary text-center whitespace-nowrap">VINHERIA AGNELLO</p>
+			<a href="${pageContext.request.contextPath}/controller?action=ShowSignup" class="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-accent-gold hover:text-primary transition-colors justify-self-end">
+				<span class="material-symbols-outlined text-base">person_add</span>
+				Criar conta
 			</a>
 		</div>
 	</header>
 
-	<main class="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-12">
+	<main class="max-w-6xl mx-auto px-4 md:px-8 pt-6 pb-8 md:pt-8 md:pb-10">
 		<section class="grid lg:grid-cols-2 gap-6 md:gap-10 items-stretch">
 			<article class="relative overflow-hidden rounded-2xl border border-primary/10 shadow-wine bg-primary text-white fade-up">
 				<div class="absolute inset-0 bg-cover bg-center opacity-35 hero-cellar-bg"></div>
@@ -119,7 +133,7 @@
 							<span class="text-accent-gold">de volta</span>
 						</h1>
 						<p class="text-slate-100/90 max-w-md leading-relaxed">
-							Entre para acessar seus pedidos, favoritos, benefícios do Club Agnello e recomendações personalizadas do nosso sommelier.
+							Entre para acessar seus pedidos, favoritos, beneficios do Club Agnello e sua experiencia completa na vinheria.
 						</p>
 					</div>
 
@@ -143,12 +157,19 @@
 					<p class="text-sm text-slate-500">Use seu e-mail cadastrado para continuar sua jornada na adega Agnello.</p>
 				</div>
 
-				<form class="space-y-5" action="/controller?action=Login" method="post">
+				<% if (erro != null && !erro.isBlank()) { %>
+					<div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+						<%= erro %>
+					</div>
+				<% } %>
+
+					<form class="space-y-5" action="${pageContext.request.contextPath}/controller?action=Login" method="post">
 					<div>
 						<label for="email" class="block text-sm font-semibold text-primary mb-2">E-mail</label>
 						<div class="relative">
 							<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">mail</span>
 							<input id="email" name="email" type="email" autocomplete="email" required placeholder="nome@exemplo.com"
+								value="${param.email}"
 								class="w-full rounded-lg border-primary/15 focus:border-primary focus:ring-primary pl-11 pr-4 py-3 bg-background-light" />
 						</div>
 					</div>
@@ -170,11 +191,11 @@
 							<input type="checkbox" class="rounded border-primary/30 text-primary focus:ring-primary" />
 							<span class="text-slate-600">Manter conectado</span>
 						</label>
-						<a href="sommelier.html" class="font-semibold text-primary hover:text-primary/75 transition-colors">Pedir ajuda do sommelier</a>
+						<a href="${pageContext.request.contextPath}/controller?action=ShowCatalog" class="font-semibold text-primary hover:text-primary/75 transition-colors">Explorar catalogo</a>
 					</div>
 
 					<button type="submit"
-						class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+						class="login-submit-button w-full bg-primary text-white font-bold py-3.5 rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
 						Entrar
 						<span class="material-symbols-outlined text-base">arrow_forward</span>
 					</button>
@@ -183,7 +204,7 @@
 
 				<p class="text-center text-sm text-slate-500 mt-8">
 					Novo por aqui?
-					<a href="signup.jsp" class="font-bold text-primary hover:text-primary/80 transition-colors">Crie sua conta</a>
+					<a href="${pageContext.request.contextPath}/controller?action=ShowSignup" class="font-bold text-primary hover:text-primary/80 transition-colors">Crie sua conta</a>
 				</p>
 			</article>
 		</section>

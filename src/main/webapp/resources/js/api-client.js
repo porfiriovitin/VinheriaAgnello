@@ -1,7 +1,7 @@
 class ApiClient {
 
     // The base endpoint pointing to DispatcherServlet
-    static BASE_URL = 'controller';
+    static BASE_URL = `${window.APP_CONTEXT || ''}/controller`;
 
     /**
      * Executes an HTTP request to the Front Controller.

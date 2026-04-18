@@ -60,6 +60,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warSourceExcludes>WEB-INF/classes/**</warSourceExcludes>
                 </configuration>
             </plugin>
         </plugins>

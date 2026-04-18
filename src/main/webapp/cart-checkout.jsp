@@ -63,13 +63,17 @@
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-32"
       data-context-path="${pageContext.request.contextPath}">
 <!-- Header / Navigation -->
-<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-primary/10 px-4 py-4">
-    <div class="max-w-2xl mx-auto flex items-center justify-between">
-        <button class="flex items-center text-primary">
-            <span onclick="window.history.back()" class="material-symbols-outlined">arrow_back</span>
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-primary/10 px-4 py-3">
+    <div class="grid grid-cols-[2.5rem_1fr_2.5rem] items-center">
+        <button class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-primary/5 transition-colors"
+                onclick="returnToCartOrigin()"
+                type="button">
+            <span class="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 class="text-xl font-bold text-primary tracking-tight">Vinheria Agnello</h1>
-        <div class="w-6"></div> <!-- Spacer for balance -->
+        <h1 class="font-display text-lg font-bold tracking-tight text-center">Vinheria Agnello</h1>
+        <span aria-hidden="true" class="w-10 h-10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">favorite</span>
+        </span>
     </div>
 </header>
 <!-- Checkout Steps Progress -->
@@ -151,7 +155,7 @@
                 <c:otherwise>
                     <div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center justify-between gap-4">
                         <p class="text-sm text-slate-600 dark:text-slate-300">Nenhum vinho adicionado ao carrinho.</p>
-                        <a href="/controller?action=ShowCatalog"
+                        <a href="${pageContext.request.contextPath}/controller?action=ShowCatalog"
                            class="inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors shrink-0">
                             Ver Catálogo
                         </a>
@@ -283,10 +287,11 @@
                 <p class="text-[10px] text-green-600 font-bold uppercase">Frete Grátis Ativado</p>
             </div>
         </div>
-        <button class="w-full bg-primary hover:bg-primary/90 text-white font-display font-bold py-4 rounded-xl text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-colors">
-            Finalizar Compra
+        <a href="${pageContext.request.contextPath}/controller?action=ShowCheckoutAddress"
+           class="w-full bg-primary hover:bg-primary/90 text-white font-display font-bold py-4 rounded-xl text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-colors">
+            Continuar para Entrega
             <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
+        </a>
     </div>
 </footer>
 <!-- Bottom Nav Bar (Optional Component Logic) -->
@@ -304,5 +309,107 @@
         <p class="text-xs font-medium leading-normal tracking-tight">Perfil</p>
     </a>
 </div>
+<script>
+    (() => {
+        const cartOriginKey = 'vinheria.cart.origin';
+        const fallbackUrl = `${window.APP_CONTEXT || ''}/controller?action=ShowIndex`;
+        const checkoutActions = new Set(['ShowCartCheckout', 'ShowCheckoutAddress', 'ShowCheckoutFinalize']);
+        const currentUrl = new URL(window.location.href);
+        const forcedReturnTarget = currentUrl.searchParams.get('returnTo');
+
+        const parseUrl = (value) => {
+            try {
+                return new URL(value, window.location.href);
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const isInternalCheckoutUrl = (url) => {
+            if (!url || url.origin !== window.location.origin) return false;
+            return checkoutActions.has(url.searchParams.get('action'));
+        };
+
+        const isCartOriginCandidate = (url) => {
+            if (!url) return false;
+            if (url.origin !== window.location.origin) return false;
+            if (url.href === window.location.href) return false;
+            return !isInternalCheckoutUrl(url);
+        };
+
+        const rememberCartOrigin = () => {
+            const referrerUrl = parseUrl(document.referrer);
+            if (!isCartOriginCandidate(referrerUrl)) return;
+
+            try {
+                sessionStorage.setItem(cartOriginKey, referrerUrl.href);
+            } catch (error) {
+                console.warn('Nao foi possivel salvar a origem do carrinho.', error);
+            }
+        };
+
+        const getStoredCartOrigin = () => {
+            try {
+                const storedValue = sessionStorage.getItem(cartOriginKey);
+                const storedUrl = parseUrl(storedValue);
+
+                if (isCartOriginCandidate(storedUrl)) {
+                    return storedUrl.href;
+                }
+
+                sessionStorage.removeItem(cartOriginKey);
+            } catch (error) {
+                console.warn('Nao foi possivel recuperar a origem do carrinho.', error);
+            }
+
+            return null;
+        };
+
+        const resolveForcedReturnUrl = () => {
+            if (forcedReturnTarget === 'home') {
+                return fallbackUrl;
+            }
+
+            return null;
+        };
+
+        window.returnToCartOrigin = function () {
+            const forcedReturnUrl = resolveForcedReturnUrl();
+            if (forcedReturnUrl) {
+                try {
+                    sessionStorage.removeItem(cartOriginKey);
+                } catch (error) {
+                    console.warn('Nao foi possivel limpar a origem do carrinho.', error);
+                }
+                window.location.href = forcedReturnUrl;
+                return;
+            }
+
+            const storedOrigin = getStoredCartOrigin();
+            if (storedOrigin) {
+                window.location.href = storedOrigin;
+                return;
+            }
+
+            const referrerUrl = parseUrl(document.referrer);
+            if (isCartOriginCandidate(referrerUrl)) {
+                window.location.href = referrerUrl.href;
+                return;
+            }
+
+            window.location.href = fallbackUrl;
+        };
+
+        if (resolveForcedReturnUrl()) {
+            try {
+                sessionStorage.removeItem(cartOriginKey);
+            } catch (error) {
+                console.warn('Nao foi possivel limpar a origem do carrinho.', error);
+            }
+        }
+
+        rememberCartOrigin();
+    })();
+</script>
 </body>
 </html>

@@ -47,10 +47,10 @@
 <p class="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Dal 1994</p>
 </div>
 <div class="flex items-center gap-2">
-<button class="p-2 text-primary dark:text-slate-100 relative">
+<a href="${pageContext.request.contextPath}/controller?action=ShowCartCheckout" class="p-2 text-primary dark:text-slate-100 relative" aria-label="Ver carrinho">
 <span class="material-symbols-outlined text-2xl">shopping_bag</span>
-<span class="absolute top-1 right-1 bg-accent-gold text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
-</button>
+<span class="absolute top-1 right-1 bg-accent-gold text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">${cartItemCount}</span>
+</a>
 </div>
 </header>
 <main class="max-w-md mx-auto pb-24">
@@ -61,7 +61,7 @@
 <span class="text-accent-gold font-display italic text-lg mb-2">Tradição &amp; Excelência</span>
 <h2 class="text-white font-display text-4xl font-bold leading-tight mb-6">Há 30 anos selecionando vinhos com paixão</h2>
 <div class="w-12 h-[2px] bg-accent-gold mb-6"></div>
-<a href="/controller?action=ShowCatalog" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-display tracking-wide border border-accent-gold/30 transition-all inline-flex items-center justify-center">
+<a href="${pageContext.request.contextPath}/controller?action=ShowCatalog" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-display tracking-wide border border-accent-gold/30 transition-all inline-flex items-center justify-center">
                     Explorar Coleção
                 </a>
 </div>
@@ -71,20 +71,20 @@
 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-primary/5">
 <div class="flex items-center gap-4 mb-3">
 <div class="bg-primary/10 p-3 rounded-full">
-<span class="material-symbols-outlined text-primary text-3xl">temp_preferences_custom</span>
+<span class="material-symbols-outlined text-primary text-3xl">wine_bar</span>
 </div>
 <div>
-<h3 class="font-display text-xl font-bold text-primary dark:text-slate-100">Descubra seu vinho ideal</h3>
-<p class="text-sm text-slate-500 dark:text-slate-400">O sommelier digital Agnello ajuda você.</p>
+<h3 class="font-display text-xl font-bold text-primary dark:text-slate-100">Descubra sua proxima garrafa</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Nossa selecao foi pensada para diferentes ocasioes.</p>
 </div>
 </div>
 <p class="text-slate-600 dark:text-slate-300 text-sm mb-5 leading-relaxed">
-                    Responda 3 perguntas simples e receba recomendações personalizadas baseadas no seu paladar.
+                    Explore o catalogo e encontre rotulos escolhidos pela equipe Agnello para harmonizar com cada momento.
                 </p>
-<button class="w-full bg-primary text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 group">
-                    Começar Quiz 
+<a href="${pageContext.request.contextPath}/controller?action=ShowCatalog" class="w-full bg-primary text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 group">
+                    Ver catalogo
                     <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
+</a>
 </div>
 </section>
 <!-- Categories Grid -->
@@ -191,9 +191,9 @@
 <span>Acesso a rótulos raros e pré-lançamentos</span>
 </li>
 </ul>
-<button class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg hover:bg-white transition-colors">
+<a href="${pageContext.request.contextPath}/controller?action=ShowClub" class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg hover:bg-white transition-colors inline-flex items-center justify-center">
                         Em breve...
-                    </button>
+                    </a>
 </div>
 </div>
 </section>

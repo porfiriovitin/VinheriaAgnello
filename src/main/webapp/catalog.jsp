@@ -68,7 +68,7 @@
         </button>
     </header>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full">
+    <main class="flex-1 max-w-7xl mx-auto w-full pb-28">
         <div class="px-4 py-8 text-center border-b border-accent-gold/20">
             <p class="text-xs uppercase tracking-widest text-accent-gold mb-2">Coleção Exclusiva</p>
             <h2 class="text-3xl font-display text-primary dark:text-slate-100 italic">Vinhos Tintos & Brancos</h2>
@@ -123,7 +123,7 @@
                             <p class="text-primary dark:text-accent-gold font-bold text-lg mb-3">
                                 R$ <fmt:formatNumber value="${wine.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                             </p>
-                            <a href="controller?action=ShowProductDetails&id=${wine.id}" class=" flex justify-center mx-auto w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold p-3 rounded uppercase tracking-widest transition-colors">
+                            <a href="${pageContext.request.contextPath}/controller?action=ShowProductDetails&id=${wine.id}" class=" flex justify-center mx-auto w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold p-3 rounded uppercase tracking-widest transition-colors">
                                 Ver Detalhes
                             </a>
                         </div>

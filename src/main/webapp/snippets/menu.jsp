@@ -10,27 +10,23 @@
         </button>
     </div>
     <nav class="p-3 space-y-1">
-        <a href="/controller?action=ShowIndex" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'home' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
+        <a href="${pageContext.request.contextPath}/controller?action=ShowIndex" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'home' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
             <span class="material-symbols-outlined">home</span>Início
         </a>
 
-        <a href="/controller?action=ShowCatalog" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'catalog' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
+        <a href="${pageContext.request.contextPath}/controller?action=ShowCatalog" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'catalog' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
             <span class="material-symbols-outlined">liquor</span>Todos os Vinhos
         </a>
 
-        <a href="/controller?action=ShowSommelier" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'sommelier' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
-            <span class="material-symbols-outlined">stars</span>Sommelier Digital
-        </a>
-
-        <a href="/controller?action=ShowCartCheckout" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'cart' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
+        <a href="${pageContext.request.contextPath}/controller?action=ShowCartCheckout" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'cart' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
             <span class="material-symbols-outlined">shopping_bag</span>Carrinho
         </a>
 
-        <a href="/controller?action=ShowLogin" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'login' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
+        <a href="${pageContext.request.contextPath}/controller?action=ShowLogin" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'login' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
             <span class="material-symbols-outlined">person</span>Entrar
         </a>
 
-        <a href="/controller?action=ShowSignup" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'signup' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
+        <a href="${pageContext.request.contextPath}/controller?action=ShowSignup" class="flex items-center gap-3 px-3 py-3 rounded-lg ${activeMenu == 'signup' ? 'text-primary bg-primary/5 font-semibold' : 'text-slate-700 hover:bg-primary/5 transition-colors'}">
             <span class="material-symbols-outlined">person_add</span>Criar conta
         </a>
     </nav>
