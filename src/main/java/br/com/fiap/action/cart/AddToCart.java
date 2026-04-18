@@ -41,7 +41,7 @@ public class AddToCart implements Action {
         String userEmail = (String) request.getSession().getAttribute("usuarioLogado");
         if (isBlank(userEmail)) {
             //JsonUtil.sendJson(response, new ApiResponse("error", "User email is missing."), HttpServletResponse.SC_BAD_REQUEST);
-            response.sendRedirect("controller?action=ShowLogin");
+            response.sendRedirect(request.getContextPath() + "/controller?action=ShowLogin");
             return null;
         }
 

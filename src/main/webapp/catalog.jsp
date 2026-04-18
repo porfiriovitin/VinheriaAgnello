@@ -68,7 +68,7 @@
         </button>
     </header>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full">
+    <main class="flex-1 max-w-7xl mx-auto w-full pb-28">
         <div class="px-4 py-8 text-center border-b border-accent-gold/20">
             <p class="text-xs uppercase tracking-widest text-accent-gold mb-2">Coleção Exclusiva</p>
             <h2 class="text-3xl font-display text-primary dark:text-slate-100 italic">Vinhos Tintos & Brancos</h2>

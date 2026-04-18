@@ -12,7 +12,10 @@ public class Login implements Action {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
+        email = email == null ? null : email.trim();
+        password = password == null ? null : password.trim();
+
+        if (isBlank(email) || isBlank(password)) {
             request.setAttribute("erro", "E-mail e senha são obrigatórios.");
             return "login.jsp";
         }
@@ -26,7 +29,17 @@ public class Login implements Action {
         }
 
         request.getSession().setAttribute("usuarioLogado", email);
+        String redirectTarget = AuthFlowSupport.consumePostLoginRedirect(request);
+        if (redirectTarget != null) {
+            response.sendRedirect(redirectTarget);
+            return null;
+        }
 
-        return "home.jsp";
+        response.sendRedirect(request.getContextPath() + "/controller?action=ShowIndex");
+        return null;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

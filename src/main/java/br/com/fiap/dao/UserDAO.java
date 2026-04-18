@@ -43,6 +43,18 @@ public class UserDAO {
         users.insertOne(doc);
     }
 
+    public User findByEmail(String email) {
+        Document userDoc = users.find(new Document("email", email)).first();
+        if (userDoc == null) return null;
+
+        User user = new User();
+        user.setName(userDoc.getString("name"));
+        user.setEmail(userDoc.getString("email"));
+        user.setRole(userDoc.getString("role"));
+        user.setCellphone(userDoc.getString("cellphone"));
+        return user;
+    }
+
     public boolean existsByEmail(String email) {
         return users.find(new Document("email", email)).first() != null;
     }
@@ -53,6 +65,38 @@ public class UserDAO {
 
         String hashed = userDoc.getString("password");
         return BCrypt.checkpw(password, hashed);
+    }
+
+    public int countCartItems(String email) {
+        Cart cart = getCart(email);
+        if (cart == null) return 0;
+
+        int totalItems = 0;
+
+        if (cart.getWines() != null) {
+            for (CartWineItem wine : cart.getWines()) {
+                if (wine == null) continue;
+                Integer quantity = wine.getQuantity();
+                totalItems += (quantity == null || quantity < 1) ? 1 : quantity;
+            }
+        }
+
+        if (cart.getAccessories() != null) {
+            for (CartAccessoryItem accessory : cart.getAccessories()) {
+                if (accessory == null) continue;
+                Integer quantity = accessory.getQuantity();
+                totalItems += (quantity == null || quantity < 1) ? 1 : quantity;
+            }
+        }
+
+        if (cart.getGifts() != null && !cart.getGifts().isEmpty()) {
+            Gift gift = cart.getGifts().get(0);
+            if (gift != null && Boolean.TRUE.equals(gift.getApplied())) {
+                totalItems += 1;
+            }
+        }
+
+        return totalItems;
     }
 
     /**

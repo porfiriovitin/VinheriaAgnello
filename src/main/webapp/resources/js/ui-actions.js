@@ -70,9 +70,29 @@ async function addToCart(productId, quantity) {
 }
 
 async function sendCartAction(action, cartItems) {
+<<<<<<< HEAD
     const data = await ApiClient.request(action, {}, 'POST', { CartItems: cartItems });
     if (data.redirected) {
         return data;
+=======
+    const baseUrl = (window.ApiClient && ApiClient.BASE_URL) ? ApiClient.BASE_URL : `${window.APP_CONTEXT || ''}/controller`;
+    const url = `${baseUrl}?action=${encodeURIComponent(action)}`;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ CartItems: cartItems })
+    });
+
+    let data = {};
+    try {
+        data = await response.json();
+    } catch (error) {
+        throw new Error('Resposta inválida do servidor.');
+>>>>>>> update
     }
     if (data.status !== 'success') {
         throw new Error(data.message || 'Resposta inválida do servidor.');
@@ -115,7 +135,7 @@ function renderWineItems(wines) {
         container.innerHTML = `
             <div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center justify-between gap-4">
                 <p class="text-sm text-slate-600 dark:text-slate-300">Nenhum vinho adicionado ao carrinho.</p>
-                <a href="/controller?action=ShowCatalog"
+                <a href="${window.APP_CONTEXT || ''}/controller?action=ShowCatalog"
                    class="inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors shrink-0">
                     Ver Catálogo
                 </a>
@@ -391,7 +411,11 @@ async function handleGiftLetterUpdate(checkbox, messageField) {
         addToCartButton.addEventListener('click', async () => {
             if (addToCartButton.disabled) return;
             if (addToCartButton.dataset.added === 'true') {
+<<<<<<< HEAD
                 window.location.href = window.location.pathname + '?action=ShowCartCheckout';
+=======
+                window.location.href = `${window.APP_CONTEXT || ''}/controller?action=ShowCartCheckout`;
+>>>>>>> update
                 return;
             }
 
