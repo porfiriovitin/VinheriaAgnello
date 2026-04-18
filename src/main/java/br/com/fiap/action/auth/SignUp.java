@@ -5,6 +5,7 @@ import br.com.fiap.dao.UserDAO;
 import br.com.fiap.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
 public class SignUp implements Action {
 
@@ -17,6 +18,8 @@ public class SignUp implements Action {
         String confirmPassword = request.getParameter("confirm-password");
         String cellphone = request.getParameter("phone");
 
+
+
         if (isBlank(firstName) || isBlank(lastName) || isBlank(email) || isBlank(password) || isBlank(confirmPassword)) {
             request.setAttribute("erro", "Todos os campos obrigatórios devem ser preenchidos.");
             return "signup.jsp";
@@ -27,9 +30,14 @@ public class SignUp implements Action {
             return "signup.jsp";
         }
 
+        if (!isBlank(cellphone) && !isValidBrazilianPhone(cellphone)) {
+            request.setAttribute("erro", "Telefone inválido.");
+            return "signup.jsp";
+        }
+
         firstName = firstName.trim();
         lastName = lastName.trim();
-        email = email.trim();
+        email = normalizeEmail(email);
         cellphone = cellphone == null ? null : cellphone.trim();
 
         String name = firstName + " " + lastName;
@@ -49,7 +57,18 @@ public class SignUp implements Action {
         return null;
     }
 
+    private String normalizeEmail(String value) {
+        if (value == null) return null;
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isValidBrazilianPhone(String phone) {
+        if (phone == null) return false;
+        return phone.matches("^\\(?[1-9]{2}\\)? ?9?[0-9]{4}-?[0-9]{4}$");
     }
 }

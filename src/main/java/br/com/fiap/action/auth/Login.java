@@ -4,6 +4,7 @@ import br.com.fiap.action.Action;
 import br.com.fiap.dao.UserDAO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
 public class Login implements Action {
 
@@ -12,7 +13,7 @@ public class Login implements Action {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        email = email == null ? null : email.trim();
+        email = normalizeEmail(email);
         password = password == null ? null : password.trim();
 
         if (isBlank(email) || isBlank(password)) {
@@ -37,6 +38,12 @@ public class Login implements Action {
 
         response.sendRedirect(request.getContextPath() + "/controller?action=ShowIndex");
         return null;
+    }
+
+    private String normalizeEmail(String value) {
+        if (value == null) return null;
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private boolean isBlank(String value) {

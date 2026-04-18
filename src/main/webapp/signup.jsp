@@ -183,7 +183,8 @@
 							<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">phone</span>
 							<input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(11) 99999-9999"
 								value="${param.phone}"
-								class="w-full rounded-lg border-primary/15 focus:border-primary focus:ring-primary pl-11 pr-4 py-3 bg-background-light" />
+								class="w-full rounded-lg border-primary/15 focus:border-primary focus:ring-primary pl-11 pr-4 py-3 bg-background-light"
+								oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
 						</div>
 					</div>
 
@@ -245,5 +246,15 @@
 			</div>
 		</section>
 	</main>
+
+	<script>
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = v;
+            });
+    </script>
 </body>
 </html>

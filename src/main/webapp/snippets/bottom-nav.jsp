@@ -28,14 +28,9 @@
         <span class="text-[10px] font-bold uppercase tracking-tighter">Club</span>
     </a>
 
-<<<<<<< HEAD
-    <!--
     <a class="flex flex-col items-center gap-1 <%= inactiveClass %>" href="#">
-=======
     <a class="flex flex-col items-center gap-1 <%= inactiveClass %>" href="${pageContext.request.contextPath}/controller?action=ShowLogin">
->>>>>>> update
         <span class="material-symbols-outlined">person</span>
         <span class="text-[10px] font-bold uppercase tracking-tighter">Perfil</span>
     </a>
-    -->
 </nav>

@@ -1,12 +1,9 @@
 package br.com.fiap.action.home;
 
 import br.com.fiap.action.Action;
-<<<<<<< HEAD
 import br.com.fiap.dao.WineDAO;
 import br.com.fiap.dto.home.ShopWindow;
-=======
 import br.com.fiap.dao.UserDAO;
->>>>>>> update
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

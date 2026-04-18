@@ -70,11 +70,11 @@ async function addToCart(productId, quantity) {
 }
 
 async function sendCartAction(action, cartItems) {
-<<<<<<< HEAD
     const data = await ApiClient.request(action, {}, 'POST', { CartItems: cartItems });
     if (data.redirected) {
         return data;
-=======
+    }
+
     const baseUrl = (window.ApiClient && ApiClient.BASE_URL) ? ApiClient.BASE_URL : `${window.APP_CONTEXT || ''}/controller`;
     const url = `${baseUrl}?action=${encodeURIComponent(action)}`;
 
@@ -87,18 +87,17 @@ async function sendCartAction(action, cartItems) {
         body: JSON.stringify({ CartItems: cartItems })
     });
 
-    let data = {};
+    let dataResponse = {};
     try {
-        data = await response.json();
+        dataResponse = await response.json();
     } catch (error) {
         throw new Error('Resposta inválida do servidor.');
->>>>>>> update
     }
-    if (data.status !== 'success') {
-        throw new Error(data.message || 'Resposta inválida do servidor.');
+    if (dataResponse.status !== 'success') {
+        throw new Error(dataResponse.message || 'Resposta inválida do servidor.');
     }
 
-    return data;
+    return dataResponse;
 }
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -411,11 +410,8 @@ async function handleGiftLetterUpdate(checkbox, messageField) {
         addToCartButton.addEventListener('click', async () => {
             if (addToCartButton.disabled) return;
             if (addToCartButton.dataset.added === 'true') {
-<<<<<<< HEAD
                 window.location.href = window.location.pathname + '?action=ShowCartCheckout';
-=======
                 window.location.href = `${window.APP_CONTEXT || ''}/controller?action=ShowCartCheckout`;
->>>>>>> update
                 return;
             }
 

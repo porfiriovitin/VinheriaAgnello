@@ -111,7 +111,8 @@
                             <input id="deliveryPhone" name="deliveryPhone" type="tel" required autocomplete="tel"
                                    value="${deliveryPhone}"
                                    placeholder="(11) 99999-9999"
-                                   class="w-full bg-background-light dark:bg-background-dark border-primary/10 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"/>
+                                   class="w-full bg-background-light dark:bg-background-dark border-primary/10 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
                         </div>
                         <div>
                             <label for="deliveryEmail" class="block text-xs font-bold text-primary uppercase tracking-widest mb-2">E-mail</label>
@@ -324,5 +325,14 @@
 </form>
 
 <%@ include file="./snippets/bottom-nav.jsp"%>
+<script>
+        document.getElementById('deliveryPhone').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = v;
+            });
+    </script>
 </body>
 </html>

@@ -64,6 +64,8 @@ public class UserDAO {
         if (userDoc == null) return false;
 
         String hashed = userDoc.getString("password");
+        if (hashed == null || hashed.isBlank() || password == null) return false;
+
         return BCrypt.checkpw(password, hashed);
     }
 
